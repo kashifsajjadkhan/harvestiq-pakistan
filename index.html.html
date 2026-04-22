@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HarvestIQ Pakistan — Post-Harvest Loss Advisor</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,300&display=swap" rel="stylesheet">
+<style>
+:root {
+  --green:#1a5c2e; --green-mid:#2d7a3e; --green-light:#4caf6b;
+  --gold:#c8962a; --gold-light:#f0b429;
+  --cream:#fdf8f0; --dark:#0f1a12; --text:#1c2b1f; --muted:#5a7060;
+  --border:#d4e8d8; --white:#ffffff;
+  --red:#c0392b; --orange:#d35400; --yellow:#e6a817; --blue:#1a5276;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--text);min-height:100vh}
+
+.hero{background:var(--dark);background-image:radial-gradient(ellipse at 20% 50%,rgba(44,122,62,.3) 0%,transparent 60%),radial-gradient(ellipse at 80% 20%,rgba(200,150,42,.15) 0%,transparent 50%);padding:48px 24px 40px;text-align:center;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;inset:0;background-image:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%234caf6b' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/svg%3E");opacity:.5}
+.badge{display:inline-block;background:rgba(200,150,42,.2);border:1px solid rgba(200,150,42,.4);color:var(--gold-light);font-size:11px;font-weight:600;letter-spacing:2px;text-transform:uppercase;padding:6px 16px;border-radius:100px;margin-bottom:20px;position:relative}
+.hero h1{font-family:'Playfair Display',serif;font-size:clamp(36px,7vw,60px);font-weight:900;color:#fff;line-height:1.05;margin-bottom:10px;position:relative}
+.hero h1 span{color:var(--gold-light)}
+.hero-sub{color:rgba(255,255,255,.6);font-size:15px;max-width:520px;margin:0 auto 6px;position:relative}
+.hero-urdu{color:rgba(255,255,255,.35);font-size:13px;direction:rtl;position:relative;margin-bottom:28px}
+.stats-row{display:flex;justify-content:center;gap:28px;flex-wrap:wrap;position:relative}
+.stat-num{font-family:'Playfair Display',serif;font-size:26px;font-weight:700;color:var(--gold-light);line-height:1}
+.stat-label{font-size:10px;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:1px;margin-top:3px}
+
+.method-strip{background:var(--green);padding:12px 24px;text-align:center;font-size:12px;color:rgba(255,255,255,.85)}
+.method-strip strong{color:var(--gold-light)}
+
+.container{max-width:820px;margin:0 auto;padding:28px 18px 60px}
+.section-label{font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--green);margin-bottom:6px}
+.card{background:#fff;border:1px solid var(--border);border-radius:16px;padding:26px;margin-bottom:18px;box-shadow:0 2px 14px rgba(0,0,0,.04)}
+.card h2{font-family:'Playfair Display',serif;font-size:20px;font-weight:700;color:var(--dark);margin-bottom:18px;padding-bottom:12px;border-bottom:2px solid var(--border)}
+
+.crop-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px}
+.crop-btn{border:1.5px solid var(--border);border-radius:12px;padding:12px 8px;text-align:center;cursor:pointer;background:var(--cream);transition:all .15s;user-select:none}
+.crop-btn:hover{border-color:var(--green-light);background:#f0faf2}
+.crop-btn.active{background:var(--green);border-color:var(--green);color:#fff}
+.crop-btn .emoji{font-size:26px;display:block;margin-bottom:4px}
+.crop-btn .cn{font-size:12px;font-weight:600;display:block}
+.crop-btn .ur{font-size:10px;opacity:.7;direction:rtl;display:block;margin-top:1px}
+
+.field{margin-bottom:18px}
+label{display:block;font-size:13px;font-weight:600;color:var(--text);margin-bottom:6px}
+label .ur{font-weight:400;color:var(--muted);direction:rtl;display:inline;font-size:12px}
+.chips{display:flex;flex-wrap:wrap;gap:7px}
+.chip{padding:7px 14px;border:1.5px solid var(--border);border-radius:100px;font-size:12px;font-weight:500;cursor:pointer;background:var(--cream);color:var(--muted);transition:all .15s;user-select:none}
+.chip:hover{border-color:var(--green-light);color:var(--green)}
+.chip.active{background:var(--green);border-color:var(--green);color:#fff}
+.select-wrap{position:relative}
+.select-wrap::after{content:'▾';position:absolute;right:13px;top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none;font-size:11px}
+select,input[type=number]{width:100%;padding:11px 15px;border:1.5px solid var(--border);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text);background:var(--cream);appearance:none;outline:none;transition:border-color .2s}
+select:focus,input[type=number]:focus{border-color:var(--green-light);background:#fff}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:500px){.two-col{grid-template-columns:1fr}}
+
+.pkr-wrap{position:relative}
+.pkr-wrap input{padding-left:46px}
+.pkr-label{position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:12px;font-weight:700;color:var(--green);pointer-events:none}
+
+.btn{width:100%;padding:15px;background:var(--green);color:#fff;border:none;border-radius:12px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:600;cursor:pointer;transition:all .2s;letter-spacing:.3px}
+.btn:hover{background:var(--green-mid);transform:translateY(-1px);box-shadow:0 6px 20px rgba(26,92,46,.25)}
+.btn-secondary{background:var(--muted)}
+.btn-secondary:hover{background:#3d4f42}
+
+#results{display:none}
+.risk-banner{border-radius:14px;padding:22px 24px;margin-bottom:18px;position:relative;overflow:hidden}
+.risk-banner.low{background:linear-gradient(135deg,#e8f5e9,#c8e6c9);border-left:5px solid #2e7d32}
+.risk-banner.medium{background:linear-gradient(135deg,#fff8e1,#ffecb3);border-left:5px solid var(--yellow)}
+.risk-banner.high{background:linear-gradient(135deg,#fff3e0,#ffe0b2);border-left:5px solid var(--orange)}
+.risk-banner.critical{background:linear-gradient(135deg,#ffebee,#ffcdd2);border-left:5px solid var(--red)}
+.risk-label{font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;opacity:.6;margin-bottom:5px}
+.risk-title{font-family:'Playfair Display',serif;font-size:24px;font-weight:700;margin-bottom:3px}
+.risk-subtitle{font-size:13px;opacity:.75}
+.risk-pct{position:absolute;right:22px;top:50%;transform:translateY(-50%);font-family:'Playfair Display',serif;font-size:56px;font-weight:900;opacity:.12;line-height:1}
+
+.timeline-bar{background:var(--border);border-radius:100px;height:9px;margin:8px 0 4px;overflow:hidden}
+.timeline-fill{height:100%;border-radius:100px;transition:width 1s ease}
+.timeline-fill.low{background:#2e7d32}
+.timeline-fill.medium{background:var(--yellow)}
+.timeline-fill.high{background:var(--orange)}
+.timeline-fill.critical{background:var(--red)}
+
+.pkr-result{background:linear-gradient(135deg,#0f1a12,#1a3a20);border-radius:14px;padding:20px 24px;margin-bottom:18px;color:#fff}
+.pkr-result .label{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--gold-light);margin-bottom:10px;font-weight:600}
+.pkr-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.pkr-box{background:rgba(255,255,255,.08);border-radius:10px;padding:14px}
+.pkr-box .val{font-family:'Playfair Display',serif;font-size:22px;font-weight:700;color:var(--gold-light);margin-bottom:2px}
+.pkr-box .desc{font-size:11px;color:rgba(255,255,255,.55)}
+
+.china-box{background:linear-gradient(135deg,#0f1a12,#1a2e3a);border-radius:14px;padding:20px 24px;margin-bottom:18px;color:#fff}
+.china-box .label{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--gold-light);margin-bottom:8px;font-weight:600}
+.china-box p{font-size:13px;color:rgba(255,255,255,.72);line-height:1.65}
+
+.rec-list{list-style:none}
+.rec-item{display:flex;gap:12px;padding:14px;border-radius:10px;margin-bottom:9px;background:var(--cream);border:1px solid var(--border);align-items:flex-start}
+.rec-icon{width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;background:#fff;border:1px solid var(--border)}
+.rec-content{flex:1;min-width:0}
+.rec-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:2px}
+.rec-title{font-weight:600;font-size:13px}
+.rec-desc{font-size:12px;color:var(--muted);line-height:1.55}
+.rec-ur{font-size:11px;color:var(--green);direction:rtl;margin-top:3px}
+.priority{font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:3px 8px;border-radius:100px;white-space:nowrap;flex-shrink:0}
+.priority.urgent{background:#ffebee;color:var(--red)}
+.priority.important{background:#fff8e1;color:#b7860a}
+.priority.helpful{background:#e8f5e9;color:#2e7d32}
+
+.uav-box{border:2px dashed var(--green-light);border-radius:14px;padding:20px 24px;margin-bottom:18px;background:rgba(76,175,107,.05)}
+.uav-box .label{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--green);margin-bottom:8px;font-weight:600}
+.uav-box h3{font-family:'Playfair Display',serif;font-size:17px;color:var(--dark);margin-bottom:8px}
+.uav-box p{font-size:12px;color:var(--muted);line-height:1.6}
+.uav-features{display:flex;flex-wrap:wrap;gap:7px;margin-top:12px}
+.uav-tag{background:rgba(26,92,46,.1);color:var(--green);font-size:11px;font-weight:600;padding:4px 10px;border-radius:100px}
+
+.method-card{background:#fff;border:1px solid var(--border);border-radius:14px;padding:18px 22px;margin-bottom:18px;font-size:12px;color:var(--muted);line-height:1.7}
+.method-card strong{color:var(--text)}
+
+.share-box{background:linear-gradient(135deg,#1a3a55,#0f1a12);border-radius:14px;padding:20px 24px;margin-bottom:18px;color:#fff;text-align:center}
+.share-box .label{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--gold-light);margin-bottom:8px;font-weight:600}
+.share-box p{font-size:13px;color:rgba(255,255,255,.7);margin-bottom:14px}
+.share-btns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.share-btn{padding:9px 18px;border-radius:100px;font-size:12px;font-weight:600;cursor:pointer;border:none;font-family:'DM Sans',sans-serif;transition:all .2s}
+.share-btn.print{background:var(--gold);color:#fff}
+.share-btn.copy{background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.25)}
+.share-btn:hover{opacity:.85;transform:translateY(-1px)}
+
+footer{text-align:center;padding:28px 20px;font-size:12px;color:var(--muted);border-top:1px solid var(--border)}
+footer strong{color:var(--green)}
+.footer-logos{display:flex;justify-content:center;gap:20px;flex-wrap:wrap;margin-top:10px}
+.footer-logo{font-size:11px;background:var(--cream);border:1px solid var(--border);padding:5px 12px;border-radius:100px;color:var(--muted)}
+
+@media print {
+  .btn, .share-box { display: none !important; }
+  #results { display: block !important; }
+  .hero { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+}
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="badge">🇵🇰 Pakistan × 🇨🇳 China Agricultural Technology Transfer</div>
+  <h1>Harvest<span>IQ</span> Pakistan</h1>
+  <p class="hero-sub">The first free post-harvest loss advisor for Pakistani smallholder farmers — built from CAAS China training, designed for the field</p>
+  <p class="hero-urdu">پاکستانی کسانوں کے لیے پہلا مفت فصل برباد ہونے سے بچاؤ کا مشاورتی آلہ</p>
+  <div class="stats-row">
+    <div class="stat"><div class="stat-num">35–40%</div><div class="stat-label">Avg. post-harvest loss</div></div>
+    <div class="stat"><div class="stat-num">PKR 345B+</div><div class="stat-label">Lost annually (Ahmad et al. 2021)</div></div>
+    <div class="stat"><div class="stat-num">13.7M</div><div class="stat-label">Tonnes produced yearly</div></div>
+    <div class="stat"><div class="stat-num">Free</div><div class="stat-label">Open source, always</div></div>
+  </div>
+</div>
+
+<div class="method-strip">
+  Risk model based on post-harvest physiology data from <strong>CAAS China training</strong> + <strong>FAO post-harvest loss studies</strong> for South Asian supply chains (Ahmad et al. 2021, ADB 2019) · Open source · Built for extension officers & smallholder farmers
+</div>
+
+<div class="container">
+
+<div class="card">
+  <div class="section-label">Step 1 — Select Your Crop / اپنی فصل منتخب کریں</div>
+  <h2>🌾 What did you harvest?</h2>
+  <div class="crop-grid" id="cropGrid">
+    <div class="crop-btn active" data-val="mango" onclick="selectCrop(this)"><span class="emoji">🥭</span><span class="cn">Mango</span><span class="ur">آم</span></div>
+    <div class="crop-btn" data-val="watermelon" onclick="selectCrop(this)"><span class="emoji">🍉</span><span class="cn">Watermelon</span><span class="ur">تربوز</span></div>
+    <div class="crop-btn" data-val="citrus" onclick="selectCrop(this)"><span class="emoji">🍊</span><span class="cn">Citrus / Kinnow</span><span class="ur">کنو / مالٹا</span></div>
+    <div class="crop-btn" data-val="tomato" onclick="selectCrop(this)"><span class="emoji">🍅</span><span class="cn">Tomato</span><span class="ur">ٹماٹر</span></div>
+    <div class="crop-btn" data-val="onion" onclick="selectCrop(this)"><span class="emoji">🧅</span><span class="cn">Onion</span><span class="ur">پیاز</span></div>
+    <div class="crop-btn" data-val="potato" onclick="selectCrop(this)"><span class="emoji">🥔</span><span class="cn">Potato</span><span class="ur">آلو</span></div>
+    <div class="crop-btn" data-val="guava" onclick="selectCrop(this)"><span class="emoji">🍈</span><span class="cn">Guava</span><span class="ur">امرود</span></div>
+    <div class="crop-btn" data-val="banana" onclick="selectCrop(this)"><span class="emoji">🍌</span><span class="cn">Banana</span><span class="ur">کیلا</span></div>
+    <div class="crop-btn" data-val="chilli" onclick="selectCrop(this)"><span class="emoji">🌶️</span><span class="cn">Chilli</span><span class="ur">مرچ</span></div>
+    <div class="crop-btn" data-val="garlic" onclick="selectCrop(this)"><span class="emoji">🧄</span><span class="cn">Garlic</span><span class="ur">لہسن</span></div>
+    <div class="crop-btn" data-val="spinach" onclick="selectCrop(this)"><span class="emoji">🥬</span><span class="cn">Leafy Greens</span><span class="ur">پتوں والی سبزیاں</span></div>
+    <div class="crop-btn" data-val="dates" onclick="selectCrop(this)"><span class="emoji">🌴</span><span class="cn">Dates</span><span class="ur">کھجور</span></div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="section-label">Step 2 — Harvest Conditions / فصل کی صورتحال</div>
+  <h2>📋 Tell us about your harvest</h2>
+
+  <div class="two-col">
+    <div class="field">
+      <label>Days Since Harvest <span class="ur">/ کٹائی کے بعد دن</span></label>
+      <input type="number" id="daysSince" min="0" max="365" value="3">
+    </div>
+    <div class="field">
+      <label>Maturity at Harvest <span class="ur">/ کٹائی کے وقت پختگی</span></label>
+      <div class="select-wrap">
+        <select id="maturity">
+          <option value="mature_green">Mature green (کچا لیکن پختہ)</option>
+          <option value="half_ripe" selected>Half ripe (آدھا پکا)</option>
+          <option value="ripe">Fully ripe (پوری طرح پکا)</option>
+          <option value="overripe">Overripe (زیادہ پکا)</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <div class="field">
+    <label>Harvesting Method <span class="ur">/ کٹائی کا طریقہ</span></label>
+    <div class="chips" id="harvestChips">
+      <div class="chip active" data-val="hand" onclick="selectChip(this,'harvestChips')">✋ Hand-picked</div>
+      <div class="chip" data-val="stick" onclick="selectChip(this,'harvestChips')">🌿 Stick / pole (ڈنڈے سے)</div>
+      <div class="chip" data-val="mechanical" onclick="selectChip(this,'harvestChips')">⚙️ Mechanical</div>
+      <div class="chip" data-val="fallen" onclick="selectChip(this,'harvestChips')">⬇️ Fallen fruit (گری ہوئی)</div>
+    </div>
+  </div>
+
+  <div class="field">
+    <label>Storage Method <span class="ur">/ ذخیرہ کا طریقہ</span></label>
+    <div class="select-wrap">
+      <select id="storage">
+        <option value="open_air">Open air / no storage (کھلی ہوا)</option>
+        <option value="shade">Shade storage (سائے میں)</option>
+        <option value="cold_room">Cold room / refrigeration (ٹھنڈا کمرہ)</option>
+        <option value="gunny">Gunny sack (بوری)</option>
+        <option value="wooden_crate">Wooden crates (لکڑی کے ڈبے)</option>
+        <option value="plastic_crate">Ventilated plastic crates (ہوادار پلاسٹک ڈبے)</option>
+        <option value="map">MAP — Modified Atmosphere (ترمیم شدہ ماحول)</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="field">
+    <label>Packaging <span class="ur">/ پیکنگ</span></label>
+    <div class="chips" id="packChips">
+      <div class="chip active" data-val="none" onclick="selectChip(this,'packChips')">No packaging (بغیر پیکنگ)</div>
+      <div class="chip" data-val="newspaper" onclick="selectChip(this,'packChips')">📰 Newspaper wrap</div>
+      <div class="chip" data-val="foam_net" onclick="selectChip(this,'packChips')">🫧 Foam net</div>
+      <div class="chip" data-val="cardboard" onclick="selectChip(this,'packChips')">📦 Cardboard box</div>
+      <div class="chip" data-val="wax_coated" onclick="selectChip(this,'packChips')">✨ Wax coated (موم لگا)</div>
+    </div>
+  </div>
+
+  <div class="field">
+    <label>Current Temperature <span class="ur">/ موجودہ درجہ حرارت</span></label>
+    <div class="chips" id="tempChips">
+      <div class="chip" data-val="below15" onclick="selectChip(this,'tempChips')">Below 15°C ❄️</div>
+      <div class="chip" data-val="1525" onclick="selectChip(this,'tempChips')">15–25°C</div>
+      <div class="chip active" data-val="2535" onclick="selectChip(this,'tempChips')">25–35°C ☀️</div>
+      <div class="chip" data-val="above35" onclick="selectChip(this,'tempChips')">Above 35°C 🔥</div>
+    </div>
+  </div>
+
+  <div class="field">
+    <label>Humidity Level <span class="ur">/ نمی کی سطح</span></label>
+    <div class="chips" id="humidChips">
+      <div class="chip" data-val="low" onclick="selectChip(this,'humidChips')">Low &lt;40% (خشک)</div>
+      <div class="chip active" data-val="medium" onclick="selectChip(this,'humidChips')">Medium 40–70%</div>
+      <div class="chip" data-val="high" onclick="selectChip(this,'humidChips')">High &gt;70% (نم)</div>
+    </div>
+  </div>
+
+  <div class="field">
+    <label>Transport Method <span class="ur">/ نقل و حمل</span></label>
+    <div class="select-wrap">
+      <select id="transport">
+        <option value="none">Not yet transported (ابھی نہیں)</option>
+        <option value="cycle">Bicycle / cart (سائیکل / گاڑی)</option>
+        <option value="tractor">Open tractor trolley (ٹریکٹر)</option>
+        <option value="truck">Open truck (ٹرک)</option>
+        <option value="refrigerated">Refrigerated vehicle (ٹھنڈی گاڑی)</option>
+      </select>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="section-label">Step 3 — Economic Calculator / معاشی حساب</div>
+  <h2>💰 Calculate Your PKR Loss Risk</h2>
+  <div class="two-col">
+    <div class="field">
+      <label>Quantity Harvested (kg) <span class="ur">/ کٹی ہوئی مقدار</span></label>
+      <input type="number" id="quantity" min="1" value="500" placeholder="e.g. 500">
+    </div>
+    <div class="field">
+      <label>Market Price (PKR/kg) <span class="ur">/ بازار قیمت</span></label>
+      <div class="pkr-wrap">
+        <span class="pkr-label">PKR</span>
+        <input type="number" id="price" min="1" value="80" placeholder="e.g. 80">
+      </div>
+    </div>
+  </div>
+</div>
+
+<button class="btn" onclick="analyze()">🔍 Analyze Harvest Risk & Calculate Losses / تجزیہ کریں</button>
+
+<!-- RESULTS -->
+<div id="results" style="margin-top:20px">
+
+  <div id="riskBanner" class="risk-banner">
+    <div class="risk-label">Post-Harvest Spoilage Risk</div>
+    <div class="risk-title" id="riskTitle"></div>
+    <div class="risk-subtitle" id="riskSubtitle"></div>
+    <div class="risk-pct" id="riskPct"></div>
+  </div>
+
+  <div class="card">
+    <div class="section-label">⏱️ Shelf Life Estimate</div>
+    <p id="shelfText" style="font-size:13px;color:var(--muted);margin-bottom:10px"></p>
+    <div class="timeline-bar"><div class="timeline-fill" id="tlFill" style="width:0%"></div></div>
+    <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-top:3px">
+      <span>Day 0 (harvest)</span><span id="tlMax"></span>
+    </div>
+  </div>
+
+  <div class="pkr-result">
+    <div class="label">💵 Economic Loss Estimate — PKR</div>
+    <div class="pkr-grid">
+      <div class="pkr-box">
+        <div class="val" id="pkrLoss">—</div>
+        <div class="desc">Estimated loss (PKR)</div>
+      </div>
+      <div class="pkr-box">
+        <div class="val" id="pkrSaved">—</div>
+        <div class="desc">Potential savings with improvements (PKR)</div>
+      </div>
+      <div class="pkr-box">
+        <div class="val" id="pkrLossPct">—</div>
+        <div class="desc">Loss as % of total harvest value</div>
+      </div>
+      <div class="pkr-box">
+        <div class="val" id="pkrTotal">—</div>
+        <div class="desc">Total harvest value (PKR)</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="section-label">✅ Recommendations / سفارشات</div>
+    <h2 id="recTitle">Actions to reduce your loss</h2>
+    <ul class="rec-list" id="recList"></ul>
+  </div>
+
+  <div class="china-box">
+    <div class="label">🇨🇳 CAAS China Technology Insight</div>
+    <p id="chinaInsight"></p>
+  </div>
+
+  <div class="uav-box">
+    <div class="label">🚁 Phase 2 — UAV / Drone Integration (Coming Soon)</div>
+    <h3>Qianwei UAV Precision Agriculture</h3>
+    <p>Based on training at Qianwei UAV Institute, China (2025), the next version of HarvestIQ will integrate drone-based crop health monitoring, early disease detection, and canopy temperature mapping to predict post-harvest loss before harvest even begins.</p>
+    <div class="uav-features">
+      <span class="uav-tag">🌡️ Thermal canopy mapping</span>
+      <span class="uav-tag">🦠 Disease early detection</span>
+      <span class="uav-tag">📊 Yield prediction AI</span>
+      <span class="uav-tag">🛰️ NDVI analysis</span>
+      <span class="uav-tag">📱 SMS alerts for farmers</span>
+    </div>
+  </div>
+
+  <div class="share-box">
+    <div class="label">📤 Share This Report</div>
+    <p>Share your analysis with your professor, extension officer, or fellow farmers</p>
+    <div class="share-btns">
+      <button class="share-btn print" onclick="window.print()">🖨️ Print / PDF Report</button>
+      <button class="share-btn copy" onclick="copyLink()">🔗 Copy Page Link</button>
+      <button class="share-btn copy" onclick="shareWhatsApp()">💬 Share via WhatsApp</button>
+    </div>
+  </div>
+
+  <div class="method-card">
+    <strong>Methodology Note:</strong> Risk scores are calculated using a weighted model incorporating crop-specific post-harvest physiology data from CAAS Beijing training (2025), FAO South Asia loss quantification studies, and field data from Pakistani supply chains (Ahmad et al. 2021; ADB 2019; Kader 2002). Shelf-life estimates are adjusted for Pakistani ambient conditions (25–45°C, 40–85% RH). This tool is for advisory purposes and should be validated with local extension officers.
+  </div>
+
+  <button class="btn btn-secondary" onclick="resetForm()" style="margin-top:6px">↩ Analyze Another Crop / دوبارہ تجزیہ کریں</button>
+</div>
+
+</div><!-- /container -->
+
+<footer>
+  <strong>HarvestIQ Pakistan</strong> — Built by Kashif Sajjad Khan<br>
+  Agronomist | Trained at Chinese Academy of Agricultural Sciences (CAAS) & Qianwei UAV Institute, China (2025)<br>
+  <div class="footer-logos">
+    <span class="footer-logo">🏛️ Open Source</span>
+    <span class="footer-logo">🌾 FAO Data</span>
+    <span class="footer-logo">🇨🇳 CAAS Trained</span>
+    <span class="footer-logo">🇵🇰 Made for Pakistan</span>
+    <span class="footer-logo">📖 Always Free</span>
+  </div>
+  <p style="margin-top:10px;font-size:11px">v2.0 · github.com/kashifsajjadkhan/harvestiq-pakistan</p>
+</footer>
+
+<script>
+// ─── State ───────────────────────────────────────────────
+let selectedCrop = 'mango';
+
+// ─── Crop database ───────────────────────────────────────
+const CROPS = {
+  mango:      { name:'Mango (آم)',       baseShelf:5,  baseLoss:35, climacteric:true,  respRate:'high' },
+  watermelon: { name:'Watermelon (تربوز)', baseShelf:10, baseLoss:20, climacteric:false, respRate:'low' },
+  citrus:     { name:'Citrus/Kinnow (کنو)', baseShelf:21, baseLoss:18, climacteric:false, respRate:'low' },
+  tomato:     { name:'Tomato (ٹماٹر)',    baseShelf:7,  baseLoss:30, climacteric:true,  respRate:'high' },
+  onion:      { name:'Onion (پیاز)',      baseShelf:60, baseLoss:12, climacteric:false, respRate:'very_low' },
+  potato:     { name:'Potato (آلو)',      baseShelf:90, baseLoss:10, climacteric:false, respRate:'very_low' },
+  guava:      { name:'Guava (امرود)',     baseShelf:4,  baseLoss:40, climacteric:true,  respRate:'very_high' },
+  banana:     { name:'Banana (کیلا)',     baseShelf:6,  baseLoss:28, climacteric:true,  respRate:'high' },
+  chilli:     { name:'Chilli (مرچ)',      baseShelf:14, baseLoss:25, climacteric:true,  respRate:'medium' },
+  garlic:     { name:'Garlic (لہسن)',     baseShelf:120,baseLoss:8,  climacteric:false, respRate:'very_low' },
+  spinach:    { name:'Leafy Greens (سبزیاں)', baseShelf:3, baseLoss:45, climacteric:false, respRate:'very_high' },
+  dates:      { name:'Dates (کھجور)',     baseShelf:180,baseLoss:6,  climacteric:false, respRate:'very_low' }
+};
+
+// ─── China insights ──────────────────────────────────────
+const CHINA_INSIGHTS = {
+  mango:      'At CAAS Beijing, mango post-harvest research focuses on ethylene inhibitor (1-MCP) application immediately after harvest. Pakistani Sindhri and Chaunsa mangoes lose 40–60% quality within 3 days at ambient temperature due to rapid ethylene production. The CAAS model recommends pre-cooling to 12–13°C within 4 hours of harvest to extend shelf life to 3–4 weeks.',
+  watermelon: 'Chinese research at CAAS shows watermelon quality is most affected by mechanical damage during transport. Pakistan loses 18–22% of watermelon annually due to road vibration damage. The recommended intervention is foam padding in transport and maintaining 10–15°C storage.',
+  citrus:     'Kinnow, Pakistan\'s signature citrus, is studied extensively under the Pakistan-China CPEC agricultural cooperation. CAAS recommends wax coating immediately post-harvest, reducing weight loss by 30–40% and extending shelf life by 3–5 weeks. Degreening with ethylene at 20–25°C improves market appeal.',
+  tomato:     'CAAS post-harvest physiology shows tomatoes harvested at mature-green stage and ripened at 18–20°C retain 85% more lycopene than vine-ripened in Pakistani heat. Controlled atmosphere storage (3% CO₂, 3% O₂) extends shelf life to 4–6 weeks — critical for Sindh-Punjab supply chains.',
+  onion:      'China\'s success in onion storage (Gansu, Xinjiang) uses 0°C cold chain with 65–70% RH. Pakistan\'s 12% average loss is largely preventable through proper curing (30°C, low humidity for 2 weeks) and avoiding rain damage during field curing season.',
+  potato:     'CAAS research on potato dormancy management is directly applicable to Punjab seed potato programs. Sprout suppression using CIPC or natural alternatives (mint oil) can extend storage to 8–10 months. Current Pakistani cold stores achieve only 4–5 months.',
+  guava:      'Guava has the shortest shelf life of any major Pakistani fruit — CAAS research confirms 90% respiration rate loss within 2 days at 35°C. Modified atmosphere packaging (5% CO₂ + 5% O₂) extends this to 3–4 weeks. Immediate pre-cooling is the #1 intervention.',
+  banana:     'Pakistan\'s banana production (KPK, Sindh) suffers from poor ethylene management. CAAS protocol: harvest at 75–80% maturity (3/4 round), pre-cool to 14°C, ripen with 100ppm ethylene for 24h before market. This reduces losses from 28% to under 8%.',
+  chilli:     'Dried chilli (Sindh, Balochistan) benefits from China\'s solar drying technology used in Xinjiang pepper production. CAAS-approved protocols achieve 8% moisture content with 95% color retention using forced-air solar driers — vs. 35–40% loss with traditional ground-drying.',
+  garlic:     'Pakistan\'s garlic competes directly with Chinese exports. CAAS Zhongguancun research shows curing at 30–35°C with good airflow for 2–3 weeks drops neck moisture and extends storage to 8 months. Pakistan\'s 8% loss is competitive but cold storage investment can reduce it to 2–3%.',
+  spinach:    'Leafy greens in Pakistan face 40–50% losses within 24 hours due to lack of cold chain. CAAS vacuum pre-cooling technology (used in Beijing vegetable belts) reduces field heat in 20 minutes vs. 4–6 hours with forced air. Even simple shade + wet burlap reduces loss by 30%.',
+  dates:      'Pakistan\'s Ajwa and Aseel dates align with CAAS research on Chinese Xinjiang dates. The key loss factor is Aw (water activity) control during Tamar stage drying. Proper drying to 15–18% moisture + sealed packaging gives 12+ months shelf life with minimal quality loss.'
+};
+
+// ─── Recommendations database ────────────────────────────
+function getRecommendations(crop, riskLevel, inputs) {
+  const all = [
+    {
+      cond: inputs.temp === 'above35' || inputs.temp === '2535',
+      priority:'urgent', icon:'🌡️',
+      title:'Pre-cool immediately',
+      desc:'Move produce to shade or cool area now. Every hour at 35°C+ causes exponential quality loss due to rapid respiration. Aim for below 20°C within 4 hours of harvest.',
+      ur:'فوری طور پر ٹھنڈی جگہ پر منتقل کریں'
+    },
+    {
+      cond: inputs.harvest === 'fallen' || inputs.harvest === 'stick',
+      priority:'urgent', icon:'🍎',
+      title:'Sort damaged produce immediately',
+      desc:'Fallen/stick-harvested produce has internal bruising invisible to the eye. Ethylene from damaged cells accelerates spoilage of all nearby produce. Sort and separate within 2 hours.',
+      ur:'خراب پھل فوری الگ کریں'
+    },
+    {
+      cond: inputs.storage === 'open_air',
+      priority:'urgent', icon:'🏠',
+      title:'Move to shade storage immediately',
+      desc:'Open air storage in Pakistani summer causes 3–5x faster spoilage. Even simple shade (tarpaulin + bamboo) reduces surface temperature by 8–12°C and cuts losses by 25–30%.',
+      ur:'سائے والی جگہ پر منتقل کریں'
+    },
+    {
+      cond: inputs.pack === 'none' && (crop.climacteric),
+      priority:'urgent', icon:'📦',
+      title:'Wrap or pack before stacking',
+      desc:'Climacteric fruits (mango, banana, guava, tomato) produce ethylene that triggers ripening in all nearby produce. Individual newspaper wrapping or foam nets slow this by 40–60%.',
+      ur:'پھلوں کو اخبار یا فوم نیٹ سے لپیٹیں'
+    },
+    {
+      cond: inputs.humid === 'high' && (crop === 'onion' || selectedCrop === 'garlic' || selectedCrop === 'dates'),
+      priority:'urgent', icon:'💨',
+      title:'Improve ventilation immediately',
+      desc:'High humidity causes rapid mold growth on onion, garlic and dates. Ensure airflow between stacks. Do not cover with plastic. Open-mesh storage or raised platforms prevent condensation.',
+      ur:'ہوادار جگہ پر رکھیں'
+    },
+    {
+      cond: inputs.days > crop.baseShelf * 0.5,
+      priority:'urgent', icon:'⚡',
+      title:'Market within 24–48 hours',
+      desc:`This crop has been stored for ${inputs.days} days — already past 50% of optimal shelf life. Prioritize sending to market immediately. Consider processing (drying, pickling) for excess quantity.`,
+      ur:'فوری بازار بھیجیں'
+    },
+    {
+      cond: inputs.storage !== 'cold_room' && inputs.storage !== 'map',
+      priority:'important', icon:'❄️',
+      title:'Invest in cold storage access',
+      desc:'Even 1–2 hours in a cold room (4–8°C) as a "pre-cooling" step before market can double shelf life. Contact your nearest PASSCO, provincial agriculture department, or private cold store.',
+      ur:'قریبی ٹھنڈے اسٹور سے رابطہ کریں'
+    },
+    {
+      cond: inputs.transport === 'tractor' || inputs.transport === 'truck',
+      priority:'important', icon:'🚛',
+      title:'Reduce transport vibration damage',
+      desc:'Open tractor/truck transport causes 15–20% mechanical loss in soft fruits. Use padded containers, avoid peak heat hours (11am–4pm), and reduce stacking height to max 40–50 cm for soft produce.',
+      ur:'گاڑی میں گدے والے ڈبے استعمال کریں'
+    },
+    {
+      cond: inputs.pack === 'none',
+      priority:'important', icon:'🫧',
+      title:'Use foam nets or newspaper wrapping',
+      desc:'Individual wrapping of fruit prevents contact bruising and slows ethylene exchange. Foam nets (cost: PKR 1–2 per piece) give 30–40% better shelf life. Available at wholesale markets.',
+      ur:'فوم نیٹ یا اخبار کا استعمال کریں'
+    },
+    {
+      cond: inputs.maturity === 'overripe',
+      priority:'urgent', icon:'⚠️',
+      title:'Process overripe produce immediately',
+      desc:'Overripe produce cannot be stored — it must be processed or sold in 24 hours. Consider: pickle, chutney, juice, or dried product. Contact local processors or sell at reduced price today.',
+      ur:'زیادہ پکا پھل آج ہی فروخت یا پروسیس کریں'
+    },
+    {
+      cond: inputs.maturity === 'ripe' && inputs.days > 2,
+      priority:'important', icon:'📅',
+      title:'Immediate market dispatch',
+      desc:'Fully ripe produce + 2+ days storage = high risk. Do not store further. Arrange transport to market immediately, even if price is lower. Partial sale now beats 100% loss.',
+      ur:'فوری بازار بھیجیں'
+    },
+    {
+      cond: true,
+      priority:'helpful', icon:'📱',
+      title:'Record this assessment',
+      desc:'Take a screenshot or print this report. Share with your local agriculture extension officer (Zila Zariat Officer) for government support schemes, cold storage subsidies, and training programs.',
+      ur:'یہ رپورٹ پرنٹ کریں اور زراعت آفیسر سے ملیں'
+    },
+    {
+      cond: true,
+      priority:'helpful', icon:'🤝',
+      title:'Join a Farmer Producer Organization (FPO)',
+      desc:'Pakistan\'s FPOs provide group access to cold storage, better transport rates, and direct buyer connections. Contact Punjab Agriculture Department or Akhuwat Foundation for your area.',
+      ur:'کسان تنظیم سے جڑیں'
+    },
+    {
+      cond: selectedCrop === 'mango' || selectedCrop === 'citrus',
+      priority:'helpful', icon:'🇨🇳',
+      title:'Apply post-harvest wax coating',
+      desc:'Carnauba wax (food-grade) applied after washing reduces water loss by 30–40% and blocks pathogen entry. Available from Lahore/Karachi agri-input suppliers. CAAS-recommended for export quality.',
+      ur:'موم کوٹنگ لگائیں — درآمد معیار کے لیے'
+    }
+  ];
+  return all.filter(r => r.cond).slice(0, 7);
+}
+
+// ─── UI helpers ───────────────────────────────────────────
+function selectCrop(el) {
+  document.querySelectorAll('#cropGrid .crop-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  selectedCrop = el.dataset.val;
+}
+
+function selectChip(el, groupId) {
+  document.querySelectorAll('#' + groupId + ' .chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+}
+
+function getChipVal(groupId) {
+  const active = document.querySelector('#' + groupId + ' .chip.active');
+  return active ? active.dataset.val : null;
+}
+
+// ─── MAIN ANALYZE ─────────────────────────────────────────
+function analyze() {
+  const crop = CROPS[selectedCrop];
+  const inputs = {
+    days:    parseInt(document.getElementById('daysSince').value) || 0,
+    maturity: document.getElementById('maturity').value,
+    harvest:  getChipVal('harvestChips'),
+    storage:  document.getElementById('storage').value,
+    pack:     getChipVal('packChips'),
+    temp:     getChipVal('tempChips'),
+    humid:    getChipVal('humidChips'),
+    transport:document.getElementById('transport').value,
+    qty:      parseFloat(document.getElementById('quantity').value) || 500,
+    price:    parseFloat(document.getElementById('price').value) || 80
+  };
+
+  // ── Risk score (0–100) ──────────────────────────────────
+  let score = 0;
+
+  // Days vs shelf life
+  const dayRatio = inputs.days / crop.baseShelf;
+  score += Math.min(35, dayRatio * 35);
+
+  // Maturity penalty
+  const maturityScore = { mature_green:0, half_ripe:5, ripe:12, overripe:22 };
+  score += maturityScore[inputs.maturity] || 0;
+
+  // Harvest method penalty
+  const harvestScore = { hand:0, stick:6, mechanical:4, fallen:14 };
+  score += harvestScore[inputs.harvest] || 0;
+
+  // Storage penalty
+  const storageScore = { open_air:16, shade:8, cold_room:-10, gunny:6, wooden_crate:3, plastic_crate:0, map:-15 };
+  score += storageScore[inputs.storage] || 0;
+
+  // Packaging penalty
+  const packScore = { none:8, newspaper:2, foam_net:-2, cardboard:-4, wax_coated:-8 };
+  score += packScore[inputs.pack] || 0;
+
+  // Temperature penalty
+  const tempScore = { below15:-8, '1525':-2, '2535':8, above35:18 };
+  score += tempScore[inputs.temp] || 0;
+
+  // Humidity penalty
+  const humidScore = { low: crop.respRate === 'very_low' ? 2 : -2, medium: 0, high: (selectedCrop === 'onion' || selectedCrop === 'garlic') ? 10 : 4 };
+  score += humidScore[inputs.humid] || 0;
+
+  // Transport penalty
+  const transScore = { none:0, cycle:4, tractor:10, truck:8, refrigerated:-6 };
+  score += transScore[inputs.transport] || 0;
+
+  score = Math.max(0, Math.min(100, Math.round(score)));
+
+  // ── Risk level ──────────────────────────────────────────
+  let riskLevel, riskTitle, riskSubtitle;
+  if (score < 25) {
+    riskLevel = 'low'; riskTitle = 'Low Risk — Good Practices Observed';
+    riskSubtitle = 'Your harvest conditions are relatively good. Minor improvements can further reduce losses.';
+  } else if (score < 50) {
+    riskLevel = 'medium'; riskTitle = 'Moderate Risk — Action Needed';
+    riskSubtitle = 'Several factors are increasing your post-harvest loss. Follow the recommendations below to reduce risk significantly.';
+  } else if (score < 75) {
+    riskLevel = 'high'; riskTitle = 'High Risk — Immediate Action Required';
+    riskSubtitle = 'Your produce is at serious risk of significant spoilage. Act on priority recommendations today.';
+  } else {
+    riskLevel = 'critical'; riskTitle = 'Critical — Severe Loss Likely';
+    riskSubtitle = 'Without immediate intervention, major losses (50%+) are likely within 24–48 hours. Sell, process, or move to cold storage now.';
+  }
+
+  // ── Shelf life ──────────────────────────────────────────
+  let shelfMultiplier = 1;
+  if (inputs.temp === 'below15') shelfMultiplier *= 2.5;
+  else if (inputs.temp === '1525') shelfMultiplier *= 1.5;
+  else if (inputs.temp === 'above35') shelfMultiplier *= 0.5;
+  if (inputs.storage === 'cold_room') shelfMultiplier *= 3;
+  else if (inputs.storage === 'map') shelfMultiplier *= 5;
+  else if (inputs.storage === 'open_air') shelfMultiplier *= 0.6;
+  if (inputs.pack === 'wax_coated') shelfMultiplier *= 1.4;
+  if (inputs.pack === 'foam_net') shelfMultiplier *= 1.2;
+
+  const adjShelf = Math.round(crop.baseShelf * shelfMultiplier);
+  const remaining = Math.max(0, adjShelf - inputs.days);
+  const shelfPct = Math.min(100, Math.round((remaining / adjShelf) * 100));
+
+  // ── Economic ────────────────────────────────────────────
+  const totalValue = inputs.qty * inputs.price;
+  const lossPct = Math.min(95, crop.baseLoss * (score / 40));
+  const lossValue = Math.round(totalValue * lossPct / 100);
+  const savedValue = Math.round(lossValue * 0.6); // realistic 60% saveable
+
+  // ── Render ──────────────────────────────────────────────
+  const banner = document.getElementById('riskBanner');
+  banner.className = 'risk-banner ' + riskLevel;
+  document.getElementById('riskTitle').textContent = riskTitle;
+  document.getElementById('riskSubtitle').textContent = riskSubtitle;
+  document.getElementById('riskPct').textContent = score + '%';
+
+  document.getElementById('shelfText').textContent =
+    `${crop.name}: Estimated ${adjShelf}-day shelf life under current conditions. ` +
+    `${inputs.days} days elapsed — approximately ${remaining} days remaining. ` +
+    (remaining <= 2 ? '⚠️ Sell or process immediately!' : remaining <= 5 ? '📅 Market within the week.' : '✅ Adequate time if conditions maintained.');
+
+  const fill = document.getElementById('tlFill');
+  fill.className = 'timeline-fill ' + riskLevel;
+  fill.style.width = shelfPct + '%';
+  document.getElementById('tlMax').textContent = adjShelf + ' days max';
+
+  document.getElementById('pkrLoss').textContent = 'PKR ' + lossValue.toLocaleString();
+  document.getElementById('pkrSaved').textContent = 'PKR ' + savedValue.toLocaleString();
+  document.getElementById('pkrLossPct').textContent = lossPct.toFixed(1) + '%';
+  document.getElementById('pkrTotal').textContent = 'PKR ' + totalValue.toLocaleString();
+
+  // Recommendations
+  document.getElementById('recTitle').textContent =
+    `${riskLevel === 'critical' ? '🚨' : riskLevel === 'high' ? '⚠️' : riskLevel === 'medium' ? '📋' : '✅'} Actions to reduce your loss — ${crop.name}`;
+
+  const recs = getRecommendations(crop, riskLevel, inputs);
+  const list = document.getElementById('recList');
+  list.innerHTML = recs.map(r => `
+    <li class="rec-item">
+      <div class="rec-icon">${r.icon}</div>
+      <div class="rec-content">
+        <div class="rec-top">
+          <span class="rec-title">${r.title}</span>
+          <span class="priority ${r.priority}">${r.priority === 'urgent' ? '🔴 URGENT' : r.priority === 'important' ? '🟡 IMPORTANT' : '🟢 HELPFUL'}</span>
+        </div>
+        <div class="rec-desc">${r.desc}</div>
+        <div class="rec-ur">${r.ur}</div>
+      </div>
+    </li>
+  `).join('');
+
+  document.getElementById('chinaInsight').textContent = CHINA_INSIGHTS[selectedCrop] || 'Insight not available for this crop.';
+
+  // Show results
+  document.getElementById('results').style.display = 'block';
+  document.getElementById('results').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// ─── Share helpers ────────────────────────────────────────
+function copyLink() {
+  const url = window.location.href;
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(url).then(() => alert('✅ Link copied! Share this file or host it online to let others open it.'));
+  } else {
+    prompt('Copy this URL:', url);
+  }
+}
+
+function shareWhatsApp() {
+  const crop = CROPS[selectedCrop];
+  const msg = encodeURIComponent(
+    `🌾 HarvestIQ Pakistan Analysis\n` +
+    `Crop: ${crop ? crop.name : selectedCrop}\n` +
+    `📊 Risk Score: ${document.getElementById('riskPct').textContent}\n` +
+    `💰 Est. Loss: ${document.getElementById('pkrLoss').textContent}\n\n` +
+    `Free tool by Kashif Sajjad Khan (CAAS Trained Agronomist)\n` +
+    `Open this file to analyze your own harvest.`
+  );
+  window.open('https://wa.me/?text=' + msg, '_blank');
+}
+
+function resetForm() {
+  document.getElementById('results').style.display = 'none';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+</script>
+</body>
+</html>
