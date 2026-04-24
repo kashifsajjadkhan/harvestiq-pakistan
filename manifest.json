@@ -1,0 +1,55 @@
+{
+  "name": "HarvestIQ Pakistan — Post-Harvest Loss Advisor",
+  "short_name": "HarvestIQ",
+  "description": "Free post-harvest loss advisor for Pakistani smallholder farmers. Analyze harvest risk, calculate losses in PKR, and get actionable recommendations from CAAS China training and FAO research.",
+  "start_url": "/harvestiq-pakistan/",
+  "scope": "/harvestiq-pakistan/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#ffffff",
+  "theme_color": "#1a5c2e",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect fill='%231a5c2e' width='192' height='192' rx='45'/%3E%3Ctext x='96' y='110' font-size='140' text-anchor='middle' dominant-baseline='middle'%3E🌾%3C/text%3E%3C/svg%3E",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect fill='%231a5c2e' width='512' height='512' rx='120'/%3E%3Ctext x='256' y='290' font-size='380' text-anchor='middle' dominant-baseline='middle'%3E🌾%3C/text%3E%3C/svg%3E",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect fill='%231a5c2e' width='192' height='192' rx='45'/%3E%3Ctext x='96' y='110' font-size='140' text-anchor='middle' dominant-baseline='middle'%3E🌾%3C/text%3E%3C/svg%3E",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ],
+  "categories": ["agriculture", "productivity"],
+  "screenshots": [
+    {
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 540 720'%3E%3Crect fill='%231a5c2e' width='540' height='720'/%3E%3Ctext x='270' y='360' font-size='80' font-weight='bold' fill='%23fff' text-anchor='middle' dominant-baseline='middle'%3EHarvestIQ%3C/text%3E%3C/svg%3E",
+      "sizes": "540x720",
+      "type": "image/svg+xml",
+      "form_factor": "narrow"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Analyze Harvest",
+      "short_name": "Analyze",
+      "description": "Quickly analyze your harvest risk",
+      "url": "/harvestiq-pakistan/?action=analyze",
+      "icons": [
+        {
+          "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 96 96'%3E%3Crect fill='%231a5c2e' width='96' height='96' rx='20'/%3E%3Ctext x='48' y='55' font-size='70' text-anchor='middle' dominant-baseline='middle'%3E📊%3C/text%3E%3C/svg%3E",
+          "sizes": "96x96",
+          "type": "image/svg+xml"
+        }
+      ]
+    }
+  ]
+}
