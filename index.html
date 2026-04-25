@@ -11,26 +11,26 @@
 
 <style>
 :root {
-  --soil: #1a1208;
-  --earth: #2d1f0a;
-  --clay: #3d2b10;
-  --wheat: #c8962a;
-  --harvest: #e8b84b;
-  --sun: #f5d080;
-  --leaf: #2d6a2d;
-  --growth: #3d8c3d;
-  --sprout: #5aad5a;
-  --sky: #1a3a5c;
-  --water: #2456836;
+  --soil: #0a120a;
+  --earth: #0f1a0f;
+  --clay: #162416;
+  --wheat: #4caf6e;
+  --harvest: #5dcc84;
+  --sun: #a8f0c0;
+  --leaf: #1e6b3a;
+  --growth: #27ae60;
+  --sprout: #5dcc84;
+  --sky: #0f2a1a;
+  --water: #163d28;
   --mist: #e8f4f0;
-  --cream: #fdf6e8;
-  --danger: #c0392b;
-  --warn: #e67e22;
+  --cream: #f0faf4;
+  --danger: #e05252;
+  --warn: #e8953a;
   --safe: #27ae60;
-  --text: #f0e8d5;
-  --text-dim: #a89878;
-  --border: rgba(200,150,42,0.2);
-  --glow: rgba(232,184,75,0.15);
+  --text: #e8f5ee;
+  --text-dim: #7aab90;
+  --border: rgba(93,204,132,0.18);
+  --glow: rgba(93,204,132,0.1);
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -947,7 +947,7 @@ body::before {
   cursor: pointer;
 }
 
-/* ====== NDVI Pakistan Map SVG ====== */
+/* ====== NDVI 🇵🇰 Pakistan SVG ====== */
 .map-district-highlight {
   fill: rgba(106,176,232,0.4);
   stroke: #6ab0e8;
@@ -1531,7 +1531,7 @@ function selectDistrict(i, btn) {
 // SATELLITE DATA (NASA MODIS simulation with real geospatial logic)
 // ============================================================
 async function fetchSatelliteData() {
-  if (!selectedDistrict) { alert('Please select your district first.'); return; }
+  if (selectedDistrict === null) { alert('Please select your district first.'); return; }
   if (selectedSatCrop === null) { alert('Please select your crop first.'); return; }
 
   const btn = document.getElementById('fetchSatBtn');
