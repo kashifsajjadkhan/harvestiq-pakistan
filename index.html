@@ -2123,8 +2123,7 @@ function copyLink {
   alert('Link copied to clipboard!');
 }
 
-function resetAll {
-  <script>
+<script>
 // ============================================================
 // DATA REPOSITORY
 // ============================================================
@@ -2207,6 +2206,7 @@ document.getElementById('installBtn')?.addEventListener('click', () => {
 
 function buildDistrictGrid() {
   const grid = document.getElementById('districtGrid');
+  if(!grid) return;
   DISTRICTS.forEach((d, i) => {
     const btn = document.createElement('button');
     btn.className = 'district-btn';
@@ -2218,6 +2218,7 @@ function buildDistrictGrid() {
 
 function buildSatCropGrid() {
   const grid = document.getElementById('satCropGrid');
+  if(!grid) return;
   CROPS.forEach((c, i) => {
     const btn = document.createElement('button');
     btn.className = 'sat-crop-btn';
@@ -2233,6 +2234,7 @@ function buildSatCropGrid() {
 
 function buildCropGrid() {
   const grid = document.getElementById('cropGrid');
+  if(!grid) return;
   CROPS.forEach((c, i) => {
     const btn = document.createElement('button');
     btn.className = 'crop-btn';
@@ -2393,11 +2395,11 @@ function shareWhatsApp() { window.open(`https://wa.me/?text=HarvestIQ%20Report:%
 
 function drawNDVIMap(ndvi, district) {
   const canvas = document.getElementById('ndviCanvas');
+  if(!canvas) return;
   const ctx = canvas.getContext('2d');
   ctx.fillStyle = '#0a1520';
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-  // Draw simple mock satellite field visualization
   ctx.fillStyle = ndvi > 0.4 ? '#27ae60' : (ndvi > 0.3 ? '#e67e22' : '#c0392b');
   ctx.beginPath();
   ctx.arc(canvas.width / 2, canvas.height / 2, 70, 0, Math.PI * 2);
@@ -2410,4 +2412,3 @@ function drawNDVIMap(ndvi, district) {
 </script>
 </body>
 </html>
-
