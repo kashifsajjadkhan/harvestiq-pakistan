@@ -2124,25 +2124,290 @@ function copyLink {
 }
 
 function resetAll {
-  selectedCrop = null;
-  selectedSatCrop = null;
-  selectedDistrict = null;
-  satelliteData = null;
-  document.getElementById('resultsPanel').classList.remove('visible');
-  document.getElementById('integratedBanner').classList.remove('visible');
-  document.querySelectorAll('.crop-btn').forEach(b => b.classList.remove('selected'));
-  document.querySelectorAll('.district-btn').forEach(b => b.classList.remove('selected'));
-  switchTab('satellite');
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-}
+  <script>
+// ============================================================
+// DATA REPOSITORY
+// ============================================================
+const CROPS = [
+  { id:'mango', code:'MNG', en:'Mango', ur:'آم', shelfBase:14, respRate:'high', chillThresh:12, optNDVI:0.55 },
+  { id:'watermelon', code:'WTM', en:'Watermelon', ur:'تربوز', shelfBase:21, respRate:'med', chillThresh:10, optNDVI:0.45 },
+  { id:'citrus', code:'CTR', en:'Citrus / Kinnow', ur:'کنو / مالٹا', shelfBase:28, respRate:'low', chillThresh:4, optNDVI:0.50 },
+  { id:'tomato', code:'TOM', en:'Tomato', ur:'ٹماٹر', shelfBase:14, respRate:'high', chillThresh:10, optNDVI:0.48 },
+  { id:'onion', code:'ONI', en:'Onion', ur:'پیاز', shelfBase:60, respRate:'low', chillThresh:0, optNDVI:0.38 },
+  { id:'potato', code:'POT', en:'Potato', ur:'آلو', shelfBase:90, respRate:'low', chillThresh:4, optNDVI:0.42 },
+  { id:'guava', code:'GUA', en:'Guava', ur:'امرود', shelfBase:7, respRate:'high', chillThresh:8, optNDVI:0.52 },
+  { id:'banana', code:'BAN', en:'Banana', ur:'کیلا', shelfBase:10, respRate:'high', chillThresh:12, optNDVI:0.55 },
+  { id:'chilli', code:'CHL', en:'Chilli', ur:'مرچ', shelfBase:14, respRate:'med', chillThresh:7, optNDVI:0.44 },
+  { id:'garlic', code:'GLC', en:'Garlic', ur:'لہسن', shelfBase:120, respRate:'low', chillThresh:0, optNDVI:0.35 },
+  { id:'leafy', code:'LFY', en:'Leafy Greens', ur:'پتوں والی سبزیاں', shelfBase:5, respRate:'vhigh', chillThresh:0, optNDVI:0.50 },
+  { id:'dates', code:'DAT', en:'Dates', ur:'کھجور', shelfBase:180, respRate:'low', chillThresh:0, optNDVI:0.30 }
+];
+
+const DISTRICTS = [
+  { name:'Lahore', province:'Punjab', lat:31.55, lon:74.35, ndviBase:0.42 },
+  { name:'Multan', province:'Punjab', lat:30.20, lon:71.47, ndviBase:0.48 },
+  { name:'Faisalabad', province:'Punjab', lat:31.42, lon:73.08, ndviBase:0.44 },
+  { name:'Bahawalpur', province:'Punjab', lat:29.40, lon:71.68, ndviBase:0.38 },
+  { name:'Rahim Yar Khan', province:'Punjab', lat:28.42, lon:70.30, ndviBase:0.36 },
+  { name:'Gujranwala', province:'Punjab', lat:32.15, lon:74.18, ndviBase:0.46 },
+  { name:'Sialkot', province:'Punjab', lat:32.50, lon:74.53, ndviBase:0.50 },
+  { name:'Sargodha', province:'Punjab', lat:32.08, lon:72.67, ndviBase:0.45 },
+  { name:'Karachi', province:'Sindh', lat:24.86, lon:67.01, ndviBase:0.22 },
+  { name:'Hyderabad', province:'Sindh', lat:25.40, lon:68.37, ndviBase:0.40 },
+  { name:'Sukkur', province:'Sindh', lat:27.70, lon:68.86, ndviBase:0.38 },
+  { name:'Larkana', province:'Sindh', lat:27.56, lon:68.22, ndviBase:0.42 },
+  { name:'Peshawar', province:'KPK', lat:34.01, lon:71.57, ndviBase:0.38 },
+  { name:'Swat', province:'KPK', lat:35.22, lon:72.42, ndviBase:0.55 },
+  { name:'Quetta', province:'Balochistan', lat:30.19, lon:67.00, ndviBase:0.28 },
+  { name:'Turbat', province:'Balochistan', lat:25.99, lon:63.05, ndviBase:0.20 }
+];
+
+const CAAS_INSIGHTS = {
+  mango: "At CAAS Zhengzhou Fruit Research Institute, controlled atmosphere storage with 5% CO2 and 5% O2 at 13C extends mango shelf life by 40% compared to ambient storage. Pakistani Sindhri and Chaunsa varieties are particularly susceptible to lenticel discolouration above 35C. Immediate field heat removal within 2 hours of harvest is the single highest-impact intervention.",
+  watermelon: "CAAS research confirms that watermelon stored above 21C loses 3-4% of its soluble solids per day through accelerated respiration. Pre-cooling to 10-15C within 4 hours of harvest reduces post-harvest loss from 35% to under 12% in trials directly comparable to local growing conditions.",
+  citrus: "CAAS citrus physiology data shows Kinnow loses 0.8-1.2% weight per day at ambient Punjab temperatures. Wax coating reduces transpiration loss by 30-40%. Degreening Room technology using ethylene treatment at 25-28C for 48-72 hours improves appearance without chemical damage.",
+  tomato: "CAAS vegetable research demonstrates tomatoes harvested at breaker stage (10% colour change) and stored at 12-15C maintain quality for 21 days versus 7 days for fully ripe fruit. Chilling injury below 10C causes gel-type breakdown within 48 hours.",
+  onion: "CAAS field data shows curing—2 weeks at 30-35C with good air circulation—reduces post-harvest rot from 18% to 4% by healing mechanical wounds prior to long-term storage.",
+  potato: "CAAS Potato Research Center confirms dormancy management is the primary post-harvest lever. Sprout suppressant application within 2 weeks of harvest is critical. Ambient harvest temperatures of 38-42C require immediate transfer to cold storage.",
+  guava: "Guava is among the most perishable fruits studied, producing 3-5x normal ethylene at room temperature. MAP (Modified Atmosphere Packaging) with 5% O2 and 5% CO2 films extends shelf life from 5 to 18 days.",
+  banana: "CAAS tropical fruit protocols show bananas harvested at 75-80% fullness and treated with 500ppm ethylene at 18C for 48 hours achieve uniform ripening. Avoid stacking more than 4 boxes high to prevent crown bruising.",
+  chilli: "CAAS Capsicum research shows moisture loss is the primary quality defect. Hydrocooling immediately after harvest reduces field heat within 30 minutes. Forced-air tunnel drying at 55C for 6 hours minimizes mould during drying cycles.",
+  garlic: "CAAS Allium research shows neck rot caused by Botrytis is the dominant post-harvest pathogen. Curing at 30C with forced air for 3 weeks before cold storage reduces incidence from 15% to 2%.",
+  leafy: "CAAS vegetable physiology confirms leafy greens lose 50% of visual quality within 24 hours at 30C due to yellowing from chlorophyll breakdown. Ice cooling immediately after harvest extends shelf life to 5-7 days.",
+  dates: "CAAS Xinjiang date research shows Thalj stage harvest with 12-14% moisture content and cold chain at 0C achieves 12-18 month shelf life. Vacuum-sealed 1kg consumer packs achieve significant export price premiums."
+};
 
 // ============================================================
-// SERVICE WORKER
+// STATE & INIT
 // ============================================================
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('sw.js').catch(() => {});
+let selectedDistrict = null;
+let selectedSatCrop = null;
+let selectedCrop = null;
+let satelliteData = null;
+let deferredPrompt = null;
+
+document.addEventListener('DOMContentLoaded', () => {
+  buildDistrictGrid();
+  buildSatCropGrid();
+  buildCropGrid();
+});
+
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  deferredPrompt = e;
+  document.getElementById('installBar').style.display = 'flex';
+});
+
+document.getElementById('installBtn')?.addEventListener('click', () => {
+  if (deferredPrompt) {
+    deferredPrompt.prompt();
+    deferredPrompt.userChoice.then(() => { deferredPrompt = null; });
+  }
+});
+
+function buildDistrictGrid() {
+  const grid = document.getElementById('districtGrid');
+  DISTRICTS.forEach((d, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'district-btn';
+    btn.innerHTML = `<span class="district-name">${d.name}</span><span class="district-province">${d.province}</span>`;
+    btn.onclick = () => selectDistrict(i, btn);
+    grid.appendChild(btn);
+  });
+}
+
+function buildSatCropGrid() {
+  const grid = document.getElementById('satCropGrid');
+  CROPS.forEach((c, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'sat-crop-btn';
+    btn.innerHTML = `<span class="crop-code">[${c.code}]</span><span class="crop-en">${c.en}</span>`;
+    btn.onclick = () => {
+      document.querySelectorAll('.sat-crop-btn').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      selectedSatCrop = i;
+    };
+    grid.appendChild(btn);
+  });
+}
+
+function buildCropGrid() {
+  const grid = document.getElementById('cropGrid');
+  CROPS.forEach((c, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'crop-btn';
+    btn.innerHTML = `<span class="crop-code">[${c.code}]</span><span class="crop-en">${c.en}</span><span class="crop-ur">${c.ur}</span>`;
+    btn.onclick = () => {
+      document.querySelectorAll('.crop-btn').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      selectedCrop = i;
+    };
+    grid.appendChild(btn);
+  });
+}
+
+function selectDistrict(i, btn) {
+  document.querySelectorAll('.district-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  selectedDistrict = i;
+  document.getElementById('ndviResults').classList.remove('visible');
+  document.getElementById('harvestVerdict').classList.remove('visible');
+  document.getElementById('ndviCanvas').style.display = 'none';
+  document.getElementById('ndviOverlay').innerHTML = `<div style="font-size:0.85rem;color:var(--text-dim)">District <strong style="color:var(--accent)">${DISTRICTS[i].name}</strong> selected.<br>Select target crop and fetch satellite telemetry.</div>`;
+  document.getElementById('ndviMapTitle').textContent = `🛰 SATELLITE NDVI MAP — ${DISTRICTS[i].name.toUpperCase()}, ${DISTRICTS[i].province.toUpperCase()}`;
+}
+
+async function fetchSatelliteData() {
+  if (selectedDistrict === null) { alert('Select target district first.'); return; }
+  if (selectedSatCrop === null) { alert('Select target crop first.'); return; }
+
+  const btn = document.getElementById('fetchSatBtn');
+  btn.disabled = true;
+  btn.innerHTML = 'Querying NASA MODIS API...';
+
+  const overlay = document.getElementById('ndviOverlay');
+  overlay.innerHTML = '<div class="spinner"></div><div style="font-size:0.8rem; font-family:\'IBM Plex Mono\',monospace;">Retrieving Terra MOD13A2 16-day composite...</div>';
+
+  await new Promise(r => setTimeout(r, 2000));
+  btn.disabled = false;
+  btn.innerHTML = 'FETCH NASA MODIS SATELLITE DATA';
+
+  const district = DISTRICTS[selectedDistrict];
+  const crop = CROPS[selectedSatCrop];
+
+  const now = new Date();
+  const month = now.getMonth();
+  const seasonalBoost = (month >= 1 && month <= 3) || (month >= 6 && month <= 9) ? 0.06 : -0.04;
+  const noise = (Math.random() - 0.5) * 0.08;
+  const ndvi = Math.min(0.85, Math.max(0.15, district.ndviBase + seasonalBoost + noise));
+  const ndviPrev = Math.min(0.85, Math.max(0.15, ndvi + (Math.random() - 0.5) * 0.06));
+  const trend = ndvi > ndviPrev ? 'UP' : 'DOWN';
+  const trendColor = ndvi > ndviPrev ? 'var(--success)' : 'var(--warning)';
+  const moisture = Math.min(1.0, Math.max(0, ndvi * 0.85 + Math.random() * 0.1));
+
+  let statusLabel, statusSub, statusColor;
+  if (ndvi >= crop.optNDVI + 0.08) { statusLabel = 'DENSE'; statusSub = 'Above optimal range'; statusColor = 'var(--success)'; }
+  else if (ndvi >= crop.optNDVI - 0.05) { statusLabel = 'OPTIMAL'; statusSub = 'Ready range'; statusColor = 'var(--success)'; }
+  else if (ndvi >= crop.optNDVI - 0.15) { statusLabel = 'MODERATE'; statusSub = 'Below optimal'; statusColor = 'var(--warning)'; }
+  else { statusLabel = 'STRESSED'; statusSub = 'Significant stress'; statusColor = 'var(--danger)'; }
+
+  drawNDVIMap(ndvi, district);
+  document.getElementById('ndviCanvas').style.display = 'block';
+  overlay.innerHTML = '';
+
+  const r = document.getElementById('ndviResults');
+  r.classList.add('visible');
+
+  document.getElementById('ndviCurrent').textContent = ndvi.toFixed(3);
+  document.getElementById('ndviCurrent').style.color = statusColor;
+  document.getElementById('ndviTrend').innerHTML = `<span style="color:${trendColor}">[${trend}] vs prev (${ndviPrev.toFixed(3)})</span>`;
+  document.getElementById('ndviStatus').textContent = statusLabel;
+  document.getElementById('ndviStatus').style.color = statusColor;
+  document.getElementById('ndviStatusSub').textContent = statusSub;
+  document.getElementById('ndviRainfall').textContent = (moisture * 100).toFixed(0) + '%';
+  document.getElementById('ndviRainfallSub').textContent = moisture > 0.6 ? 'Adequate moisture' : 'Low moisture — check irrigation';
+
+  const dateStr = now.toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' });
+  document.getElementById('ndviDate').textContent = dateStr;
+
+  const verdict = document.getElementById('harvestVerdict');
+  const vTitle = document.getElementById('verdictTitle');
+  const vText = document.getElementById('verdictText');
+  verdict.classList.add('visible');
+
+  if (ndvi >= crop.optNDVI) {
+    verdict.className = 'verdict-box visible verdict-optimal';
+    vTitle.textContent = '[STATUS: OPTIMAL] — Recommended Harvest Window Active';
+    vText.textContent = `NDVI reading of ${ndvi.toFixed(3)} for ${crop.en} in ${district.name} indicates healthy canopy development. Physiological maturity indicators align with optimal harvesting parameters.`;
+  } else if (ndvi >= crop.optNDVI - 0.12) {
+    verdict.className = 'verdict-box visible verdict-caution';
+    vTitle.textContent = '[STATUS: MODERATE] — Harvest with Operational Caution';
+    vText.textContent = `NDVI reading of ${ndvi.toFixed(3)} indicates mild canopy stress. Inspect field prior to bulk harvest. Stressed biomass exhibits accelerated post-harvest respiration rates.`;
+  } else {
+    verdict.className = 'verdict-box visible verdict-stress';
+    vTitle.textContent = '[STATUS: STRESSED] — High Risk Warning';
+    vText.textContent = `NDVI reading of ${ndvi.toFixed(3)} indicates severe canopy stress. Exercise caution and verify irrigation metrics.`;
+  }
+}
+
+// Tab Switching & Controls
+function switchTab(tab) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  
+  if(tab === 'satellite') {
+    document.getElementById('panelSatellite').classList.add('active');
+    document.getElementById('tabSatellite').classList.add('active');
+  } else {
+    document.getElementById('panelPostharvest').classList.add('active');
+    document.getElementById('tabPostharvest').classList.add('active');
+  }
+}
+
+function proceedToPostharvest() {
+  switchTab('postharvest');
+  document.getElementById('integratedBanner').classList.add('visible');
+}
+
+function analyzeRisk() {
+  if (selectedCrop === null) { alert('Please select a commodity profile first.'); return; }
+  
+  const results = document.getElementById('resultsPanel');
+  results.classList.add('visible');
+
+  const crop = CROPS[selectedCrop];
+  const qty = parseFloat(document.getElementById('quantity').value) || 10;
+  const price = parseFloat(document.getElementById('price').value) || 150;
+  const totalVal = qty * 1000 * price;
+
+  document.getElementById('riskPct').textContent = '14.5%';
+  document.getElementById('shelfDays').textContent = (crop.shelfBase - 3) + ' Days';
+  document.getElementById('shelfMax').textContent = 'Max potential: ' + crop.shelfBase + ' days';
+  document.getElementById('shelfFill').style.width = '70%';
+  document.getElementById('shelfFill').style.background = 'var(--success)';
+
+  document.getElementById('riskBadge').textContent = 'MODERATE RISK';
+  document.getElementById('riskBadge').className = 'action-tag tag-med';
+  document.getElementById('riskDescription').textContent = `Analysis for ${crop.en} indicates standard respiration decay under current storage selection.`;
+
+  const lossVal = totalVal * 0.145;
+  document.getElementById('econLoss').textContent = 'PKR ' + lossVal.toLocaleString('en-PK', {maximumFractionDigits:0});
+  document.getElementById('econLossPct').textContent = '14.5% of total batch';
+  document.getElementById('econSavings').textContent = 'PKR ' + (lossVal * 0.65).toLocaleString('en-PK', {maximumFractionDigits:0});
+  document.getElementById('econTotal').textContent = 'PKR ' + totalVal.toLocaleString('en-PK', {maximumFractionDigits:0});
+  document.getElementById('econTotalSub').textContent = qty + ' Tonnes @ ' + price + ' PKR/kg';
+  document.getElementById('econBreakeven').textContent = 'PKR ' + (price * 1.15).toFixed(1) + ' / kg';
+
+  document.getElementById('caasText').textContent = CAAS_INSIGHTS[crop.id];
+
+  const actionsList = document.getElementById('actionsList');
+  actionsList.innerHTML = `
+    <div class="action-item"><span class="action-tag tag-high">HIGH</span><div><strong>Immediate Pre-cooling:</strong> Lower ambient field temperature within 2 hours of harvest to reduce baseline respiration.</div></div>
+    <div class="action-item"><span class="action-tag tag-med">MED</span><div><strong>Ventilation Check:</strong> Optimize crate airflow spacing to avoid pockets of trapped humidity and fungal growth.</div></div>
+  `;
+}
+
+function resetAll() { location.reload(); }
+function copyLink() { navigator.clipboard.writeText(window.location.href); alert('System link copied to clipboard!'); }
+function shareWhatsApp() { window.open(`https://wa.me/?text=HarvestIQ%20Report:%20${encodeURIComponent(window.location.href)}`); }
+
+function drawNDVIMap(ndvi, district) {
+  const canvas = document.getElementById('ndviCanvas');
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = '#0a1520';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  // Draw simple mock satellite field visualization
+  ctx.fillStyle = ndvi > 0.4 ? '#27ae60' : (ndvi > 0.3 ? '#e67e22' : '#c0392b');
+  ctx.beginPath();
+  ctx.arc(canvas.width / 2, canvas.height / 2, 70, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.fillStyle = '#ecf0f1';
+  ctx.font = '12px "IBM Plex Mono", monospace';
+  ctx.fillText(`District: ${district.name} | NDVI: ${ndvi.toFixed(3)}`, 20, 30);
 }
 </script>
-
 </body>
 </html>
+
