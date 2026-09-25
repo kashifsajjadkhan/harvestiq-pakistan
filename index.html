@@ -1054,14 +1054,10 @@ body::before {
 <!-- VIDEO SHOWCASE -->
 <section class="video-showcase">
   <div class="hero-visual">
-    <video id="demoVideo" controls playsinline preload="metadata" style="display:none">
-      <source src="demo.mp4" type="video/mp4">
-      <track kind="captions" src="demo.vtt" srclang="en" label="English" default>
-    </video>
-    <div class="video-empty" id="videoEmpty">
-      <div class="play-ring"></div>
-      Demo video goes here — drop in demo.mp4 (+ demo.vtt for captions) next to this file.
-    </div>
+<video id="demovideo" controls playsinline preload="metadata">
+  <source src="demo.mp4" type="video/mp4">
+  <track kind="captions" src="demo.vtt" srclang="en" label="English" default>
+</video>
   </div>
   <p class="video-caption">See HarvestIQ go from satellite NDVI reading to a full post-harvest risk report</p>
 </section>
