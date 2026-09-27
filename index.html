@@ -1011,15 +1011,6 @@ body::before {
 </head>
 <body>
 
-<div id="splashIntro">
-  <img src="satellite.png" id="splashSatellite" alt="Satellite">
-  <img src="drone.png" id="splashDrone" alt="Drone">
-</div>
-
-<style>
-... (all the splash CSS)
-</style>
-
 <!-- Install bar -->
 <div class="install-bar" id="installBar" style="display:none">
 ...
@@ -2037,11 +2028,56 @@ function resetAll() {
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('sw.js').catch(() => {});
 }
-</script>
 <div id="splashIntro">
   <img src="satellite.png" id="splashSatellite" alt="Satellite">
   <img src="drone.png" id="splashDrone" alt="Drone">
 </div>
+
+<style>
+#splashIntro {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9999;
+  overflow: hidden;
+  background: transparent;
+}
+#splashSatellite {
+  position: absolute;
+  top: 18%;
+  width: 160px;
+  opacity: 0;
+  animation: flyRight 7s cubic-bezier(0.25, 0.1, 0.25, 1) infinite;
+}
+#splashDrone {
+  position: absolute;
+  top: 55%;
+  width: 110px;
+  opacity: 0;
+  animation: flyLeft 7s cubic-bezier(0.25, 0.1, 0.25, 1) infinite;
+  animation-delay: 1s;
+}
+@keyframes flyRight {
+  0%   { left: -250px; transform: rotate(-10deg) scale(0.9); opacity: 0; filter: blur(6px); }
+  10%  { opacity: 0.95; filter: blur(3px); }
+  50%  { filter: blur(1px); transform: rotate(-2deg) scale(1.05); }
+  85%  { opacity: 0.95; filter: blur(2px); }
+  100% { left: 110%; transform: rotate(8deg) scale(0.9); opacity: 0; filter: blur(6px); }
+}
+@keyframes flyLeft {
+  0%   { left: 110%; transform: rotate(10deg) scaleX(-1) scale(0.9); opacity: 0; }
+  10%  { opacity: 0.95; }
+  85%  { opacity: 0.95; }
+  100% { left: -200px; transform: rotate(-6deg) scaleX(-1) scale(0.9); opacity: 0; }
+}
+</style>
+
+<script>
+setTimeout(function() {
+  var splash = document.getElementById('splashIntro');
+  if (splash) splash.style.display = 'none';
+}, 30000);
+</script>
   
 </body>
 </html>
