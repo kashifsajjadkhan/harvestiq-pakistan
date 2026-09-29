@@ -1601,39 +1601,64 @@ async function fetchSatelliteData() {
   const overlay = document.getElementById('ndviOverlay');
   overlay.innerHTML = '<div class="ndvi-spinner"></div><div class="ndvi-loading">Querying NASA MODIS Terra MOD13A2<br>16-day NDVI composite...</div>';
 
-  // Simulate NASA API call with real geospatial variance
-  await new Promise(r => setTimeout(r, 2200));
-
   const district = DISTRICTS[selectedDistrict];
   const crop = CROPS[selectedSatCrop];
 
-  // Real NDVI logic: base value + seasonal + noise
-  const now = new Date();
-  const month = now.getMonth(); // 0-11
-  // Pakistan seasonal NDVI peaks: Rabi (Nov-Mar), Kharif (May-Oct)
-  const seasonalBoost = (month >= 1 && month <= 3) || (month >= 6 && month <= 9) ? 0.06 : -0.04;
-  const noise = (Math.random() - 0.5) * 0.08;
-  const ndvi = Math.min(0.85, Math.max(0.15, district.ndviBase + seasonalBoost + noise));
-  const ndviPrev = Math.min(0.85, Math.max(0.15, ndvi + (Math.random() - 0.5) * 0.06));
+  let ndvi, ndviPrev, dateStr, isReal = true;
+
+  try {
+    const now = new Date();
+    const startOfYear = new Date(now.getFullYear(), 0, 0);
+    const dayOfYear = Math.floor((now - startOfYear) / 86400000);
+    const endDate = 'A' + now.getFullYear() + String(dayOfYear).padStart(3, '0');
+    const startDay = Math.max(1, dayOfYear - 64); // ~64 days back to guarantee at least 2-3 composites
+    const startDate = 'A' + now.getFullYear() + String(startDay).padStart(3, '0');
+
+    const url = `https://modis.ornl.gov/rst/api/v1/MOD13A2/subset?latitude=${district.lat}&longitude=${district.lon}&startDate=${startDate}&endDate=${endDate}&kmAboveBelow=0&kmLeftRight=0`;
+
+    const response = await fetch(url, { headers: { 'Accept': 'application/json' } });
+    if (!response.ok) throw new Error('API responded with ' + response.status);
+    const data = await response.json();
+
+    const ndviRows = data.subset.filter(row => row.band === '250m_16_days_NDVI' || row.band === '1_km_16_days_NDVI');
+    if (!ndviRows.length) throw new Error('No NDVI band in response');
+
+    const latest = ndviRows[ndviRows.length - 1];
+    const prev = ndviRows.length > 1 ? ndviRows[ndviRows.length - 2] : latest;
+
+    const rawLatest = latest.data[0];
+    const rawPrev = prev.data[0];
+    if (rawLatest <= -3000) throw new Error('Fill value — no valid pixel');
+
+    ndvi = rawLatest * 0.0001;
+    ndviPrev = rawPrev * 0.0001;
+    dateStr = new Date(latest.calendar_date).toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' });
+
+  } catch (err) {
+    console.warn('Live MODIS fetch failed, falling back to modeled estimate:', err);
+    isReal = false;
+    const month = new Date().getMonth();
+    const seasonalBoost = (month >= 1 && month <= 3) || (month >= 6 && month <= 9) ? 0.06 : -0.04;
+    const noise = (Math.random() - 0.5) * 0.08;
+    ndvi = Math.min(0.85, Math.max(0.15, district.ndviBase + seasonalBoost + noise));
+    ndviPrev = Math.min(0.85, Math.max(0.15, ndvi + (Math.random() - 0.5) * 0.06));
+    dateStr = new Date().toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' }) + ' (estimated)';
+  }
+
   const trend = ndvi > ndviPrev ? 'Up' : 'Down';
   const trendColor = ndvi > ndviPrev ? '#27ae60' : '#e67e22';
-
-  // Moisture index (EVI proxy)
   const moisture = Math.min(1.0, Math.max(0, ndvi * 0.85 + Math.random() * 0.1));
 
-  // Crop status
   let statusLabel, statusSub, statusColor;
   if (ndvi >= crop.optNDVI + 0.08) { statusLabel = 'Dense'; statusSub = 'Above optimal'; statusColor = '#27ae60'; }
   else if (ndvi >= crop.optNDVI - 0.05) { statusLabel = 'Optimal'; statusSub = 'Ready range'; statusColor = var_harvest(); }
   else if (ndvi >= crop.optNDVI - 0.15) { statusLabel = 'Moderate'; statusSub = 'Below optimal'; statusColor = '#e67e22'; }
   else { statusLabel = 'Stressed'; statusSub = 'Significant stress'; statusColor = '#c0392b'; }
 
-  // Draw NDVI canvas map
   drawNDVIMap(ndvi, district);
   document.getElementById('ndviCanvas').style.display = 'block';
   overlay.innerHTML = '';
 
-  // Show results
   const r = document.getElementById('ndviResults');
   r.classList.add('visible');
 
@@ -1646,7 +1671,6 @@ async function fetchSatelliteData() {
   document.getElementById('ndviRainfall').textContent = (moisture * 100).toFixed(0) + '%';
   document.getElementById('ndviRainfallSub').textContent = moisture > 0.6 ? 'Good moisture' : moisture > 0.4 ? 'Moderate' : 'Low — irrigation needed';
 
-  // Bar
   document.getElementById('ndviBarWrap').style.display = 'block';
   const pct = Math.round(ndvi * 100);
   document.getElementById('ndviBarPct').textContent = pct + '%';
@@ -1654,11 +1678,8 @@ async function fetchSatelliteData() {
   fill.style.background = ndvi >= 0.5 ? 'linear-gradient(90deg,#e67e22,#27ae60)' : 'linear-gradient(90deg,#c0392b,#e67e22)';
   setTimeout(() => { fill.style.width = pct + '%'; }, 100);
 
-  // Date
-  const dateStr = now.toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' });
-  document.getElementById('ndviDate').textContent = `NASA MODIS · ${dateStr}`;
+  document.getElementById('ndviDate').textContent = (isReal ? 'NASA MODIS · ' : 'Modeled estimate · ') + dateStr;
 
-  // Harvest verdict
   const verdict = document.getElementById('harvestVerdict');
   const vTitle = document.getElementById('verdictTitle');
   const vText = document.getElementById('verdictText');
@@ -1678,9 +1699,8 @@ async function fetchSatelliteData() {
     vText.textContent = `NDVI reading of ${ndvi.toFixed(3)} indicates significant crop stress in ${district.name}. Stress-harvested ${crop.en} shows accelerated post-harvest deterioration — typical shelf life is reduced by 30–40%. If harvest cannot be delayed, prioritise immediate cold chain and reduce handling damage to minimum.`;
   }
 
-  satelliteData = { ndvi, district: district.name, crop: crop.en, status: statusLabel };
+  satelliteData = { ndvi, district: district.name, crop: crop.en, status: statusLabel, real: isReal };
 
-  // Proceed button
   document.getElementById('proceedBtn').classList.add('visible');
   btn.disabled = false;
   btn.innerHTML = ' Refresh Satellite Data';
