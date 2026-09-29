@@ -1614,13 +1614,13 @@ async function fetchSatelliteData() {
     const startDay = Math.max(1, dayOfYear - 64); // ~64 days back to guarantee at least 2-3 composites
     const startDate = 'A' + now.getFullYear() + String(startDay).padStart(3, '0');
 
-    const url = `https://modis.ornl.gov/rst/api/v1/MOD13A2/subset?latitude=${district.lat}&longitude=${district.lon}&startDate=${startDate}&endDate=${endDate}&kmAboveBelow=0&kmLeftRight=0`;
+    const url = `https://modis.ornl.gov/rst/api/v1/MOD13Q1/subset?latitude=${district.lat}&longitude=${district.lon}&startDate=${startDate}&endDate=${endDate}&band=250m_16_days_NDVI&kmAboveBelow=0&kmLeftRight=0`;
 
     const response = await fetch(url, { headers: { 'Accept': 'application/json' } });
     if (!response.ok) throw new Error('API responded with ' + response.status);
     const data = await response.json();
 
-    const ndviRows = data.subset.filter(row => row.band === '250m_16_days_NDVI' || row.band === '1_km_16_days_NDVI');
+    const ndviRows = data.subset.filter(row => row.band === '250m_16_days_NDVI');
     if (!ndviRows.length) throw new Error('No NDVI band in response');
 
     const latest = ndviRows[ndviRows.length - 1];
