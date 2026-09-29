@@ -1614,7 +1614,7 @@ async function fetchSatelliteData() {
     const startDay = Math.max(1, dayOfYear - 64); // ~64 days back to guarantee at least 2-3 composites
     const startDate = 'A' + now.getFullYear() + String(startDay).padStart(3, '0');
 
-    const url = `https://modis.ornl.gov/rst/api/v1/MOD13Q1/subset?latitude=${district.lat}&longitude=${district.lon}&startDate=${startDate}&endDate=${endDate}&band=250m_16_days_NDVI&kmAboveBelow=0&kmLeftRight=0`;
+    const url = `https://modis.ornl.gov/rst/api/v1/MOD13Q1/subset?latitude=${district.lat}&longitude=${district.lon}&startDate=${startDate}&endDate=${endDate}&band=250m_16_days_NDVI&kmAboveBelow=0&kmLeftRight=1`;
 
     const response = await fetch(url, { headers: { 'Accept': 'application/json' } });
     if (!response.ok) throw new Error('API responded with ' + response.status);
