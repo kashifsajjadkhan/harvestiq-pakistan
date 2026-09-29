@@ -1590,120 +1590,77 @@ function selectDistrict(i, btn) {
 // ============================================================
 // SATELLITE DATA (NASA MODIS simulation with real geospatial logic)
 // ============================================================
-async function fetchSatelliteData() {
-  if (selectedDistrict === null) { alert('Please select your district first.'); return; }
-  if (selectedSatCrop === null) { alert('Please select your crop first.'); return; }
+function drawNDVIMap(ndvi, district, realGrid, gridRows, gridCols) {
+  const canvas = document.getElementById('ndviCanvas');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
 
-  const btn = document.getElementById('fetchSatBtn');
-  btn.disabled = true;
-  btn.innerHTML = '<div class="ndvi-spinner" style="width:20px;height:20px;margin:0;border-width:2px"></div> Fetching satellite data...';
+  const bg = ctx.createLinearGradient(0, 0, W, H);
+  bg.addColorStop(0, '#eef4f0');
+  bg.addColorStop(1, '#e3ede6');
+  ctx.fillStyle = bg;
+  ctx.fillRect(0, 0, W, H);
 
-  const overlay = document.getElementById('ndviOverlay');
-  overlay.innerHTML = '<div class="ndvi-spinner"></div><div class="ndvi-loading">Querying NASA MODIS Terra MOD13A2<br>16-day NDVI composite...</div>';
+  ctx.strokeStyle = 'rgba(106,176,232,0.05)';
+  ctx.lineWidth = 1;
+  for (let x = 0; x < W; x += 40) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke(); }
+  for (let y = 0; y < H; y += 40) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke(); }
 
-  const district = DISTRICTS[selectedDistrict];
-  const crop = CROPS[selectedSatCrop];
+  const useReal = realGrid && gridRows && gridCols;
+  const cols = useReal ? gridCols : 22;
+  const rows = useReal ? gridRows : 8;
+  const cw = W / cols, ch = H / rows;
 
-  let ndvi, ndviPrev, dateStr, isReal = true;
-
-  try {
-    const now = new Date();
-    const startOfYear = new Date(now.getFullYear(), 0, 0);
-    const dayOfYear = Math.floor((now - startOfYear) / 86400000);
-    const endDate = 'A' + now.getFullYear() + String(dayOfYear).padStart(3, '0');
-    const startDay = Math.max(1, dayOfYear - 64); // ~64 days back to guarantee at least 2-3 composites
-    const startDate = 'A' + now.getFullYear() + String(startDay).padStart(3, '0');
-
-    const url = `https://modis.ornl.gov/rst/api/v1/MOD13Q1/subset?latitude=${district.lat}&longitude=${district.lon}&startDate=${startDate}&endDate=${endDate}&band=250m_16_days_NDVI&kmAboveBelow=0&kmLeftRight=1`;
-
-    const response = await fetch(url, { headers: { 'Accept': 'application/json' } });
-    if (!response.ok) throw new Error('API responded with ' + response.status);
-    const data = await response.json();
-
-    const ndviRows = data.subset.filter(row => row.band === '250m_16_days_NDVI');
-    if (!ndviRows.length) throw new Error('No NDVI band in response');
-
-    const latest = ndviRows[ndviRows.length - 1];
-    const prev = ndviRows.length > 1 ? ndviRows[ndviRows.length - 2] : latest;
-
-    const rawLatest = latest.data[0];
-    const rawPrev = prev.data[0];
-    if (rawLatest <= -3000) throw new Error('Fill value — no valid pixel');
-
-    ndvi = rawLatest * 0.0001;
-    ndviPrev = rawPrev * 0.0001;
-    dateStr = new Date(latest.calendar_date).toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' });
-
-  } catch (err) {
-    console.warn('Live MODIS fetch failed, falling back to modeled estimate:', err);
-    isReal = false;
-    const month = new Date().getMonth();
-    const seasonalBoost = (month >= 1 && month <= 3) || (month >= 6 && month <= 9) ? 0.06 : -0.04;
-    const noise = (Math.random() - 0.5) * 0.08;
-    ndvi = Math.min(0.85, Math.max(0.15, district.ndviBase + seasonalBoost + noise));
-    ndviPrev = Math.min(0.85, Math.max(0.15, ndvi + (Math.random() - 0.5) * 0.06));
-    dateStr = new Date().toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' }) + ' (estimated)';
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      let v;
+      if (useReal) {
+        const cellVal = realGrid[r * cols + c];
+        v = cellVal === null ? null : Math.min(1, Math.max(0, cellVal));
+      } else {
+        v = Math.min(1, Math.max(0, ndvi + (Math.random() - 0.5) * 0.18));
+      }
+      ctx.fillStyle = v === null ? '#cccccc' : ndviColor(v);
+      ctx.globalAlpha = v === null ? 0.3 : 0.7;
+      ctx.fillRect(c * cw + 1, r * ch + 1, cw - 2, ch - 2);
+    }
   }
+  ctx.globalAlpha = 1;
 
-  const trend = ndvi > ndviPrev ? 'Up' : 'Down';
-  const trendColor = ndvi > ndviPrev ? '#27ae60' : '#e67e22';
-  const moisture = Math.min(1.0, Math.max(0, ndvi * 0.85 + Math.random() * 0.1));
+  ctx.fillStyle = 'rgba(0,0,0,0.5)';
+  ctx.fillRect(W/2 - 100, H/2 - 24, 200, 48);
+  ctx.strokeStyle = 'rgba(106,176,232,0.5)';
+  ctx.strokeRect(W/2 - 100, H/2 - 24, 200, 48);
+  ctx.fillStyle = '#1c6fa8';
+  ctx.font = 'bold 13px IBM Plex Mono, monospace';
+  ctx.textAlign = 'center';
+  ctx.fillText(' ' + district.name, W/2, H/2 - 6);
+  ctx.fillStyle = ndviColor(ndvi);
+  ctx.font = '12px IBM Plex Mono, monospace';
+  ctx.fillText(`NDVI: ${ndvi.toFixed(3)}`, W/2, H/2 + 14);
 
-  let statusLabel, statusSub, statusColor;
-  if (ndvi >= crop.optNDVI + 0.08) { statusLabel = 'Dense'; statusSub = 'Above optimal'; statusColor = '#27ae60'; }
-  else if (ndvi >= crop.optNDVI - 0.05) { statusLabel = 'Optimal'; statusSub = 'Ready range'; statusColor = var_harvest(); }
-  else if (ndvi >= crop.optNDVI - 0.15) { statusLabel = 'Moderate'; statusSub = 'Below optimal'; statusColor = '#e67e22'; }
-  else { statusLabel = 'Stressed'; statusSub = 'Significant stress'; statusColor = '#c0392b'; }
+  const lgX = 20, lgY = H - 40, lgW = 120, lgH = 10;
+  const grad = ctx.createLinearGradient(lgX, 0, lgX + lgW, 0);
+  grad.addColorStop(0, '#c0392b');
+  grad.addColorStop(0.4, '#e67e22');
+  grad.addColorStop(0.7, '#f5d080');
+  grad.addColorStop(1, '#27ae60');
+  ctx.fillStyle = grad;
+  ctx.fillRect(lgX, lgY, lgW, lgH);
+  ctx.fillStyle = 'rgba(15,30,20,0.4)';
+  ctx.font = '9px IBM Plex Mono, monospace';
+  ctx.textAlign = 'left';
+  ctx.fillText('0.0', lgX, lgY + 22);
+  ctx.textAlign = 'right';
+  ctx.fillText('1.0', lgX + lgW, lgY + 22);
+  ctx.textAlign = 'center';
+  ctx.fillStyle = 'rgba(15,30,20,0.25)';
+  ctx.fillText('NDVI', lgX + lgW/2, lgY + 22);
 
-  drawNDVIMap(ndvi, district);
-  document.getElementById('ndviCanvas').style.display = 'block';
-  overlay.innerHTML = '';
-
-  const r = document.getElementById('ndviResults');
-  r.classList.add('visible');
-
-  document.getElementById('ndviCurrent').textContent = ndvi.toFixed(3);
-  document.getElementById('ndviCurrent').style.color = statusColor;
-  document.getElementById('ndviTrend').innerHTML = `<span style="color:${trendColor}">${trend} vs prev period (${ndviPrev.toFixed(3)})</span>`;
-  document.getElementById('ndviStatus').textContent = statusLabel;
-  document.getElementById('ndviStatus').style.color = statusColor;
-  document.getElementById('ndviStatusSub').textContent = statusSub;
-  document.getElementById('ndviRainfall').textContent = (moisture * 100).toFixed(0) + '%';
-  document.getElementById('ndviRainfallSub').textContent = moisture > 0.6 ? 'Good moisture' : moisture > 0.4 ? 'Moderate' : 'Low — irrigation needed';
-
-  document.getElementById('ndviBarWrap').style.display = 'block';
-  const pct = Math.round(ndvi * 100);
-  document.getElementById('ndviBarPct').textContent = pct + '%';
-  const fill = document.getElementById('ndviBarFill');
-  fill.style.background = ndvi >= 0.5 ? 'linear-gradient(90deg,#e67e22,#27ae60)' : 'linear-gradient(90deg,#c0392b,#e67e22)';
-  setTimeout(() => { fill.style.width = pct + '%'; }, 100);
-
-  document.getElementById('ndviDate').textContent = (isReal ? 'NASA MODIS · ' : 'Modeled estimate · ') + dateStr;
-
-  const verdict = document.getElementById('harvestVerdict');
-  const vTitle = document.getElementById('verdictTitle');
-  const vText = document.getElementById('verdictText');
-  verdict.classList.add('visible');
-
-  if (ndvi >= crop.optNDVI) {
-    verdict.className = 'harvest-verdict visible verdict-optimal';
-    vTitle.textContent = ' Crop Health: OPTIMAL — Good time to harvest';
-    vText.textContent = `NDVI reading of ${ndvi.toFixed(3)} for ${crop.en} in ${district.name} indicates healthy canopy with adequate moisture. Physiological maturity indicators align with expected harvest window. Proceed with harvest and focus on post-harvest handling — see Phase 2 below.`;
-  } else if (ndvi >= crop.optNDVI - 0.12) {
-    verdict.className = 'harvest-verdict visible verdict-caution';
-    vTitle.textContent = ' Crop Health: MODERATE — Harvest with caution';
-    vText.textContent = `NDVI reading of ${ndvi.toFixed(3)} suggests mild crop stress in ${district.name}. This may indicate water deficit or early senescence. Inspect field physically before bulk harvest. Stressed crops have lower Brix and higher post-harvest respiration rates — expect 15–20% higher losses than normal.`;
-  } else {
-    verdict.className = 'harvest-verdict visible verdict-stress';
-    vTitle.textContent = ' Crop Health: STRESSED — Delay harvest if possible';
-    vText.textContent = `NDVI reading of ${ndvi.toFixed(3)} indicates significant crop stress in ${district.name}. Stress-harvested ${crop.en} shows accelerated post-harvest deterioration — typical shelf life is reduced by 30–40%. If harvest cannot be delayed, prioritise immediate cold chain and reduce handling damage to minimum.`;
-  }
-
-  satelliteData = { ndvi, district: district.name, crop: crop.en, status: statusLabel, real: isReal };
-
-  document.getElementById('proceedBtn').classList.add('visible');
-  btn.disabled = false;
-  btn.innerHTML = ' Refresh Satellite Data';
+  ctx.fillStyle = 'rgba(106,176,232,0.7)';
+  ctx.font = '9px IBM Plex Mono, monospace';
+  ctx.textAlign = 'right';
+  ctx.fillText(useReal ? 'NASA MODIS Terra · MOD13Q1 · 250m (real pixels)' : 'NASA MODIS Terra · MOD13Q1 · 250m (est.)', W - 12, H - 8);
 }
 
 function var_harvest() { return '#e8b84b'; }
