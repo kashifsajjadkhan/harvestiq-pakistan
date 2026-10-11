@@ -2124,12 +2124,14 @@ if ('serviceWorker' in navigator) {
 }
 </script>
 <div id="splashIntro" aria-hidden="true">
+  <div class="cloud" id="cloud1"></div>
+  <div class="cloud" id="cloud2"></div>
   <img src="satellite.png" id="splashSatellite" alt="">
 </div>
 
 <style>
-/* Ambient satellite drift: slow, infinite, barely-there.
-   A satellite passing overhead every ~80s — atmosphere, not decoration. */
+/* Ambient sky: satellite flyby + drifting clouds.
+   Medium pace, subtle — alive but never distracting. */
 #splashIntro {
   position: fixed;
   inset: 0;
@@ -2140,17 +2142,32 @@ if ('serviceWorker' in navigator) {
 }
 #splashSatellite {
   position: absolute;
-  top: 10%;
-  width: 110px;
-  opacity: 0.13;
-  animation: driftAcross 80s linear infinite;
+  top: 8%;
+  width: 95px;
+  opacity: 0.35;
+  animation: satFly 32s linear infinite;
 }
-@keyframes driftAcross {
-  from { left: -160px; transform: rotate(-8deg); }
-  to   { left: 110%;  transform: rotate(7deg); }
+@keyframes satFly {
+  0%   { left: -140px; transform: translateY(0) rotate(-8deg); }
+  25%  { transform: translateY(-14px) rotate(-4deg); }
+  50%  { transform: translateY(6px) rotate(2deg); }
+  75%  { transform: translateY(-10px) rotate(5deg); }
+  100% { left: 110%; transform: translateY(0) rotate(7deg); }
+}
+.cloud {
+  position: absolute;
+  border-radius: 50%;
+  background: radial-gradient(ellipse at center, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0) 70%);
+  filter: blur(6px);
+}
+#cloud1 { top: 3%; width: 230px; height: 72px; opacity: 0.5; animation: cloudDrift 48s linear infinite; }
+#cloud2 { top: 17%; width: 150px; height: 48px; opacity: 0.35; animation: cloudDrift 64s linear infinite; animation-delay: -22s; }
+@keyframes cloudDrift {
+  from { left: -260px; }
+  to   { left: 110%; }
 }
 @media (prefers-reduced-motion: reduce) {
-  #splashSatellite { animation: none; opacity: 0; }
+  #splashSatellite, .cloud { animation: none; opacity: 0; }
 }
 </style>
 </body>
