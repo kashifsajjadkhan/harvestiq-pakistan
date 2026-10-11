@@ -2126,12 +2126,17 @@ if ('serviceWorker' in navigator) {
 <div id="splashIntro" aria-hidden="true">
   <div class="cloud" id="cloud1"></div>
   <div class="cloud" id="cloud2"></div>
-  <img src="satellite.png" id="splashSatellite" alt="">
+  <div id="satGroup">
+    <img src="satellite.png" id="splashSatellite" alt="">
+    <div id="scanBeam"></div>
+    <div id="satPing"></div>
+  </div>
 </div>
 
 <style>
-/* Ambient sky: satellite flyby + drifting clouds.
-   Medium pace, subtle — alive but never distracting. */
+/* One-time satellite flyover: it crosses the sky once, sweeping a scan
+   beam over the page like it's reading the fields below, fires a radar
+   ping mid-flight, then it's gone. Clouds keep drifting for ambience. */
 #splashIntro {
   position: fixed;
   inset: 0;
@@ -2140,19 +2145,60 @@ if ('serviceWorker' in navigator) {
   overflow: hidden;
   background: transparent;
 }
-#splashSatellite {
+#satGroup {
   position: absolute;
-  top: 8%;
-  width: 95px;
-  opacity: 0.35;
-  animation: satFly 32s linear infinite;
+  top: 6%;
+  left: -180px;
+  width: 110px;
+  animation: satOnce 15s cubic-bezier(0.45, 0, 0.35, 1) 1s 1 forwards;
 }
-@keyframes satFly {
-  0%   { left: -140px; transform: translateY(0) rotate(-8deg); }
-  25%  { transform: translateY(-14px) rotate(-4deg); }
-  50%  { transform: translateY(6px) rotate(2deg); }
-  75%  { transform: translateY(-10px) rotate(5deg); }
-  100% { left: 110%; transform: translateY(0) rotate(7deg); }
+@keyframes satOnce {
+  0%  { left: -180px; transform: translateY(0); opacity: 0; }
+  6%  { opacity: 1; }
+  50% { transform: translateY(-16px); }
+  94% { opacity: 1; }
+  100% { left: 112%; transform: translateY(8px); opacity: 0; }
+}
+#splashSatellite {
+  width: 110px;
+  display: block;
+  transform: rotate(-8deg);
+  filter: drop-shadow(0 0 14px rgba(160, 220, 255, 0.55));
+}
+#scanBeam {
+  position: absolute;
+  top: 88%;
+  left: 50%;
+  width: 90px;
+  height: 300px;
+  transform: translateX(-50%) skewX(-10deg);
+  background: linear-gradient(to bottom, rgba(170, 230, 255, 0.35), rgba(170, 230, 255, 0.08) 60%, transparent);
+  clip-path: polygon(38% 0, 62% 0, 100% 100%, 0 100%);
+  animation: beamOn 15s linear 1s 1 forwards, beamFlicker 0.8s ease-in-out infinite alternate;
+}
+@keyframes beamOn {
+  0%, 8% { opacity: 0; }
+  15%, 85% { opacity: 1; }
+  93%, 100% { opacity: 0; }
+}
+@keyframes beamFlicker {
+  from { filter: brightness(0.9); }
+  to   { filter: brightness(1.15); }
+}
+#satPing {
+  position: absolute;
+  top: 120px;
+  left: 50%;
+  width: 26px;
+  height: 26px;
+  border: 2px solid rgba(170, 230, 255, 0.8);
+  border-radius: 50%;
+  opacity: 0;
+  animation: pingOnce 2.6s ease-out 7s 1 forwards;
+}
+@keyframes pingOnce {
+  0%   { opacity: 0.9; transform: translateX(-50%) scale(0.4); }
+  100% { opacity: 0; transform: translateX(-50%) scale(4.2); }
 }
 .cloud {
   position: absolute;
@@ -2167,7 +2213,7 @@ if ('serviceWorker' in navigator) {
   to   { left: 110%; }
 }
 @media (prefers-reduced-motion: reduce) {
-  #splashSatellite, .cloud { animation: none; opacity: 0; }
+  #satGroup, #scanBeam, #satPing, .cloud { animation: none; opacity: 0; }
 }
 </style>
 </body>
