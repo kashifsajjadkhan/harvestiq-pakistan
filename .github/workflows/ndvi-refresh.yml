@@ -1,0 +1,35 @@
+name: Refresh satellite NDVI snapshot
+
+# Runs every Monday at 03:00 UTC and can also be triggered manually
+# (Actions tab -> "Refresh satellite NDVI snapshot" -> Run workflow).
+# Fetches the latest NASA MODIS NDVI for all districts and commits
+# data/ndvi.json, which the site loads from its own domain (no CORS issues).
+
+on:
+  schedule:
+    - cron: "0 3 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Fetch latest MODIS NDVI
+        run: python scripts/fetch_ndvi.py
+
+      - name: Commit snapshot
+        run: |
+          git config user.name "harvestiq-bot"
+          git config user.email "harvestiq-bot@users.noreply.github.com"
+          git add data/ndvi.json
+          git diff --cached --quiet || git commit -m "chore: weekly MODIS NDVI snapshot"
+          git push

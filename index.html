@@ -283,6 +283,19 @@ body::before {
   font-size: 1.4rem;
   flex-shrink: 0;
 }
+/* Fetch pulse: the satellite "scans" while data loads — motion with meaning. */
+.satellite-icon-wrap.scanning {
+  animation: satPulse 1.1s ease-in-out infinite;
+  border-color: rgba(106,176,232,0.9);
+  box-shadow: 0 0 18px rgba(106,176,232,0.45);
+}
+@keyframes satPulse {
+  0%, 100% { transform: scale(1) rotate(0deg); }
+  50%      { transform: scale(1.12) rotate(-8deg); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .satellite-icon-wrap.scanning { animation: none; }
+}
 
 .satellite-title {
   font-family: 'Playfair Display', serif;
@@ -341,6 +354,8 @@ body::before {
 
 .ndvi-map-title { font-size: 0.78rem; font-family: 'IBM Plex Mono', monospace; color: #1c6fa8; }
 .ndvi-date { font-size: 0.68rem; color: var(--text-dim); }
+.ndvi-date.live { color: #1e7d46; font-weight: 600; }
+.ndvi-date.demo { color: #c46a1b; font-weight: 600; }
 
 .ndvi-display {
   position: relative;
@@ -389,19 +404,37 @@ body::before {
 .ndvi-results.visible { display: grid; grid-template-columns: repeat(3, 1fr); }
 
 .ndvi-card {
-  background: rgba(15,30,20,0.03);
-  border: 1px solid rgba(106,176,232,0.2);
-  border-radius: 6px;
-  padding: 14px;
+  background: #ffffff;
+  border: 1px solid rgba(106,176,232,0.16);
+  border-radius: 10px;
+  padding: 18px 14px 16px;
   text-align: center;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(20,40,30,0.06), 0 6px 18px rgba(20,40,30,0.05);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.ndvi-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+}
+.ndvi-card:nth-child(1)::before { background: linear-gradient(90deg, #27ae60, #82c341); }
+.ndvi-card:nth-child(2)::before { background: linear-gradient(90deg, #e8b84b, #e67e22); }
+.ndvi-card:nth-child(3)::before { background: linear-gradient(90deg, #1c6fa8, #6ab0e8); }
+.ndvi-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(20,40,30,0.08), 0 12px 28px rgba(20,40,30,0.08);
 }
 
 .ndvi-val {
   font-family: 'Playfair Display', serif;
-  font-size: 1.8rem;
+  font-size: 2rem;
   font-weight: 700;
   display: block;
-  margin-bottom: 4px;
+  margin-bottom: 6px;
+  letter-spacing: -0.01em;
 }
 
 .ndvi-label { font-size: 0.68rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.06em; }
@@ -411,17 +444,19 @@ body::before {
 .ndvi-bar-wrap { margin-bottom: 16px; }
 .ndvi-bar-label { font-size: 0.72rem; color: var(--text-dim); margin-bottom: 6px; display: flex; justify-content: space-between; }
 .ndvi-bar-track {
-  height: 8px;
-  background: rgba(15,30,20,0.06);
-  border-radius: 4px;
+  height: 10px;
+  background: rgba(15,30,20,0.07);
+  border-radius: 6px;
   overflow: hidden;
   position: relative;
+  box-shadow: inset 0 1px 3px rgba(20,40,30,0.12);
 }
 .ndvi-bar-fill {
   height: 100%;
-  border-radius: 4px;
+  border-radius: 6px;
   transition: width 1s ease;
   width: 0%;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.35);
 }
 
 /* Harvest readiness verdict */
@@ -1086,10 +1121,10 @@ body::before {
 
     <div class="satellite-panel">
       <div class="satellite-header">
-        <div class="satellite-icon-wrap"></div>
+        <div class="satellite-icon-wrap" id="satIcon">🛰️</div>
         <div>
           <div class="satellite-title">Satellite Crop Health Monitor</div>
-          <div class="satellite-sub">Real NDVI data from NASA MODIS · Updated every 8 days · Free, no account needed</div>
+          <div class="satellite-sub">Live NDVI data from NASA MODIS Terra · 16-day composite · Auto-refreshed weekly · Free, no account needed</div>
         </div>
       </div>
 
@@ -1117,7 +1152,7 @@ body::before {
             <span class="ndvi-map-title" id="ndviMapTitle"> NDVI MAP — SELECT DISTRICT TO LOAD</span>
             <span class="ndvi-date" id="ndviDate"></span>
           </div>
-          <p class="data-note">NDVI composites are published 4–6 weeks after acquisition due to NASA's processing pipeline.</p>
+          <p class="data-note">MOD13Q1 is a 16-day NDVI composite; the latest period is typically published within days of the composite window closing. Source: NASA LP DAAC / ORNL DAAC.</p>
           <div class="ndvi-display" id="ndviDisplay">
             <div class="ndvi-overlay" id="ndviOverlay">
               <div style="font-size:2.5rem;margin-bottom:8px;opacity:0.3"></div>
@@ -1588,7 +1623,54 @@ function selectDistrict(i, btn) {
 }
 
 // ============================================================
-// SATELLITE DATA (NASA MODIS simulation with real geospatial logic)
+// --- NDVI data sources, tried in order ---
+// 1) Weekly snapshot written by .github/workflows/ndvi-refresh.yml (same origin: never blocked)
+// 2) Direct live fetch via the CORS proxy worker (optional, see worker.js)
+// 3) Modeled estimate (always works, clearly labeled)
+const MODIS_PROXY = 'https://REPLACE-WITH-YOUR-WORKER.workers.dev/?url=';
+async function loadNdviSnapshot(district) {
+  const res = await fetch('data/ndvi.json', { cache: 'no-store' });
+  if (!res.ok) return null;
+  const snap = await res.json();
+  const entry = (snap.districts || []).find(d => d.name === district.name);
+  if (!entry || typeof entry.ndvi !== 'number') return null;
+  const compDate = new Date(entry.date + 'T00:00:00').toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' });
+  return {
+    ndvi: entry.ndvi,
+    prev: entry.prev_ndvi,
+    dateStr: compDate + ' · auto-refreshed ' + snap.updated_at,
+    grid: entry.grid, rows: entry.rows, cols: entry.cols,
+    source: 'snapshot'
+  };
+}
+
+async function loadNdviLive(district) {
+  const toDoy = (d) => {
+    const startOfYear = new Date(d.getFullYear(), 0, 0);
+    return 'A' + d.getFullYear() + String(Math.floor((d - startOfYear) / 86400000)).padStart(3, '0');
+  };
+  const endDt = new Date(); endDt.setDate(endDt.getDate() - 8);   // allow for composite publication lag
+  const startDt = new Date(); startDt.setDate(startDt.getDate() - 72);
+  const ornlUrl = `https://modis.ornl.gov/rst/api/v1/MOD13Q1/subset?latitude=${district.lat}&longitude=${district.lon}&startDate=${toDoy(startDt)}&endDate=${toDoy(endDt)}&band=250m_16_days_NDVI&kmAboveBelow=1&kmLeftRight=1`;
+  const response = await fetch(MODIS_PROXY + encodeURIComponent(ornlUrl), { headers: { 'Accept': 'application/json' } });
+  if (!response.ok) throw new Error('API responded with ' + response.status);
+  const data = await response.json();
+  const ndviRows = data.subset.filter(row => row.band === '250m_16_days_NDVI');
+  if (!ndviRows.length) throw new Error('No NDVI band in response');
+  const latest = ndviRows[ndviRows.length - 1];
+  const prev = ndviRows.length > 1 ? ndviRows[ndviRows.length - 2] : latest;
+  const rows = data.nrows, cols = data.ncols;
+  const centerIndex = Math.floor(rows / 2) * cols + Math.floor(cols / 2);
+  if (latest.data[centerIndex] <= -2000) throw new Error('Fill value at center pixel');
+  return {
+    ndvi: latest.data[centerIndex] * 0.0001,
+    prev: prev.data[centerIndex] * 0.0001,
+    dateStr: new Date(latest.calendar_date).toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' }),
+    grid: latest.data.map(v => v <= -2000 ? null : v * 0.0001),
+    rows: rows, cols: cols,
+    source: 'live'
+  };
+}
 // ============================================================
 function drawNDVIMap(ndvi, district, realGrid, gridRows, gridCols) {
   const canvas = document.getElementById('ndviCanvas');
@@ -1669,6 +1751,7 @@ async function fetchSatelliteData() {
   const btn = document.getElementById('fetchSatBtn');
   btn.disabled = true;
   btn.innerHTML = '<div class="ndvi-spinner" style="width:20px;height:20px;margin:0;border-width:2px"></div> Fetching satellite data...';
+  document.getElementById('satIcon').classList.add('scanning');
 
   const overlay = document.getElementById('ndviOverlay');
   overlay.innerHTML = '<div class="ndvi-spinner"></div><div class="ndvi-loading">Querying NASA MODIS Terra MOD13Q1<br>16-day NDVI composite...</div>';
@@ -1676,56 +1759,36 @@ async function fetchSatelliteData() {
   const district = DISTRICTS[selectedDistrict];
   const crop = CROPS[selectedSatCrop];
 
-  let ndvi, ndviPrev, dateStr, isReal = true, realGrid = null, gridRows = 0, gridCols = 0;
+  let ndvi, ndviPrev, dateStr, realGrid = null, gridRows = 0, gridCols = 0;
+  let dataSource = 'demo';
 
-  try {
-    const now = new Date();
-    const startOfYear = new Date(now.getFullYear(), 0, 0);
-    const dayOfYear = Math.floor((now - startOfYear) / 86400000);
-    const endDate = 'A' + now.getFullYear() + String(dayOfYear).padStart(3, '0');
-    const startDay = Math.max(1, dayOfYear - 64);
-    const startDate = 'A' + now.getFullYear() + String(startDay).padStart(3, '0');
-
-    const url = `https://modis.ornl.gov/rst/api/v1/MOD13Q1/subset?latitude=${district.lat}&longitude=${district.lon}&startDate=${startDate}&endDate=${endDate}&band=250m_16_days_NDVI&kmAboveBelow=1&kmLeftRight=1`;
-
-    const response = await fetch(url, { headers: { 'Accept': 'application/json' } });
-    if (!response.ok) throw new Error('API responded with ' + response.status);
-    const data = await response.json();
-
-    const ndviRows = data.subset.filter(row => row.band === '250m_16_days_NDVI');
-    if (!ndviRows.length) throw new Error('No NDVI band in response');
-
-    const latest = ndviRows[ndviRows.length - 1];
-    const prev = ndviRows.length > 1 ? ndviRows[ndviRows.length - 2] : latest;
-
-    gridRows = data.nrows;
-    gridCols = data.ncols;
-    const centerIndex = Math.floor(gridRows / 2) * gridCols + Math.floor(gridCols / 2);
-
-    const rawCenter = latest.data[centerIndex];
-    const rawPrevCenter = prev.data[centerIndex];
-    if (rawCenter <= -2000) throw new Error('Fill value at center pixel — no valid data');
-
-    ndvi = rawCenter * 0.0001;
-    ndviPrev = rawPrevCenter * 0.0001;
-    dateStr = new Date(latest.calendar_date).toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' });
-
-    realGrid = latest.data.map(v => v <= -2000 ? null : v * 0.0001);
-
-  } catch (err) {
-    console.warn('Live MODIS fetch failed, falling back to modeled estimate:', err);
-    isReal = false;
-    const month = new Date().getMonth();
-    const seasonalBoost = (month >= 1 && month <= 3) || (month >= 6 && month <= 9) ? 0.06 : -0.04;
-    const noise = (Math.random() - 0.5) * 0.08;
-    ndvi = Math.min(0.85, Math.max(0.15, district.ndviBase + seasonalBoost + noise));
-    ndviPrev = Math.min(0.85, Math.max(0.15, ndvi + (Math.random() - 0.5) * 0.06));
-    dateStr = new Date().toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' }) + ' (estimated)';
+  const snapshot = await loadNdviSnapshot(district).catch(() => null);
+  if (snapshot) {
+    ({ ndvi, prev: ndviPrev, dateStr, grid: realGrid, rows: gridRows, cols: gridCols, source: dataSource } = snapshot);
+  } else {
+    const live = await loadNdviLive(district).catch((err) => {
+      console.warn('Live MODIS fetch failed:', err);
+      return null;
+    });
+    if (live) {
+      ({ ndvi, prev: ndviPrev, dateStr, grid: realGrid, rows: gridRows, cols: gridCols, source: dataSource } = live);
+    } else {
+      console.warn('Using modeled NDVI estimate for', district.name);
+      const month = new Date().getMonth();
+      const seasonalBoost = (month >= 1 && month <= 3) || (month >= 6 && month <= 9) ? 0.06 : -0.04;
+      const noise = (Math.random() - 0.5) * 0.08;
+      ndvi = Math.min(0.85, Math.max(0.15, district.ndviBase + seasonalBoost + noise));
+      ndviPrev = Math.min(0.85, Math.max(0.15, ndvi + (Math.random() - 0.5) * 0.06));
+      dateStr = new Date().toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' }) + ' (estimated)';
+    }
   }
+  const isReal = dataSource !== 'demo';
 
   const trend = ndvi > ndviPrev ? 'Up' : 'Down';
   const trendColor = ndvi > ndviPrev ? '#27ae60' : '#e67e22';
-  const moisture = Math.min(1.0, Math.max(0, ndvi * 0.85 + Math.random() * 0.1));
+  const moisture = isReal
+    ? Math.min(1.0, Math.max(0, ndvi * 0.85))
+    : Math.min(1.0, Math.max(0, ndvi * 0.85 + Math.random() * 0.1));
 
   let statusLabel, statusSub, statusColor;
   if (ndvi >= crop.optNDVI + 0.08) { statusLabel = 'Dense'; statusSub = 'Above optimal'; statusColor = '#27ae60'; }
@@ -1756,7 +1819,14 @@ async function fetchSatelliteData() {
   fill.style.background = ndvi >= 0.5 ? 'linear-gradient(90deg,#e67e22,#27ae60)' : 'linear-gradient(90deg,#c0392b,#e67e22)';
   setTimeout(() => { fill.style.width = pct + '%'; }, 100);
 
-  document.getElementById('ndviDate').textContent = (isReal ? 'NASA MODIS · ' : 'Modeled estimate · ') + dateStr;
+  const dateEl = document.getElementById('ndviDate');
+  dateEl.textContent = dataSource === 'snapshot'
+    ? `NASA MODIS · ${dateStr} · auto-updated weekly`
+    : dataSource === 'live'
+      ? `NASA MODIS · ${dateStr} · live`
+      : `Modeled estimate · ${dateStr} · live feed unavailable`;
+  dateEl.classList.remove('live', 'demo');
+  dateEl.classList.add(isReal ? 'live' : 'demo');
 
   const verdict = document.getElementById('harvestVerdict');
   const vTitle = document.getElementById('verdictTitle');
@@ -1780,6 +1850,7 @@ async function fetchSatelliteData() {
   satelliteData = { ndvi, district: district.name, crop: crop.en, status: statusLabel, real: isReal };
 
   document.getElementById('proceedBtn').classList.add('visible');
+  document.getElementById('satIcon').classList.remove('scanning');
   btn.disabled = false;
   btn.innerHTML = ' Refresh Satellite Data';
 }
@@ -2052,12 +2123,13 @@ if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('sw.js').catch(() => {});
 }
 </script>
-<div id="splashIntro">
-  <img src="satellite.png" id="splashSatellite" alt="Satellite">
-  <img src="drone.png" id="splashDrone" alt="Drone">
+<div id="splashIntro" aria-hidden="true">
+  <img src="satellite.png" id="splashSatellite" alt="">
 </div>
 
 <style>
+/* Ambient satellite drift: slow, infinite, barely-there.
+   A satellite passing overhead every ~80s — atmosphere, not decoration. */
 #splashIntro {
   position: fixed;
   inset: 0;
@@ -2068,31 +2140,17 @@ if ('serviceWorker' in navigator) {
 }
 #splashSatellite {
   position: absolute;
-  top: 18%;
-  width: 160px;
-  opacity: 0;
-  animation: flyRight 35s cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
-}
-#splashDrone {
-  position: absolute;
-  top: 55%;
+  top: 10%;
   width: 110px;
-  opacity: 1;
-  animation: flyLeft 35s cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
+  opacity: 0.13;
+  animation: driftAcross 80s linear infinite;
 }
-@keyframes flyRight {
-  0%   { left: -250px; transform: rotate(-10deg) scale(0.9); opacity: 0; filter: blur(6px); }
-  10%  { opacity: 0.95; filter: blur(3px); }
-  50%  { filter: blur(1px); transform: rotate(-2deg) scale(1.05); }
-  85%  { opacity: 0.95; filter: blur(2px); }
-  100% { left: 110%; transform: rotate(8deg) scale(0.9); opacity: 0; filter: blur(6px); }
+@keyframes driftAcross {
+  from { left: -160px; transform: rotate(-8deg); }
+  to   { left: 110%;  transform: rotate(7deg); }
 }
-@keyframes flyLeft {
-  0%   { left: 110%; transform: rotate(10deg) scaleX(-1) scale(0.9); opacity: 0; filter: blur(6px); }
-  10%  { opacity: 0.95; filter: blur(3px); }
-  50%  { filter: blur(1px); transform: rotate(2deg) scaleX(-1) scale(1.05); }
-  85%  { opacity: 0.95; filter: blur(2px); }
-  100% { left: -200px; transform: rotate(-6deg) scaleX(-1) scale(0.9); opacity: 0; filter: blur(6px); }
+@media (prefers-reduced-motion: reduce) {
+  #splashSatellite { animation: none; opacity: 0; }
 }
 </style>
 </body>
