@@ -1,4 +1,5 @@
-# HarvestIQ Pakistan 🌾🛰️
+# HarvestIQ Pakistan <img width="64" height="66" alt="image" src="https://github.com/user-attachments/assets/b4cf8190-f4ec-4e3f-a62d-9c1934ce4370" />
+
 
 **Field-to-market intelligence for Pakistani smallholder farmers** — satellite crop-health monitoring before harvest, and a post-harvest loss calculator for what happens after.
 
