@@ -28,8 +28,8 @@ jobs:
 
       - name: Commit snapshot
         run: |
-          git config user.name "harvestiq-bot"
-          git config user.email "harvestiq-bot@users.noreply.github.com"
+          git config user.name "kashifsajjadkhan"
+          git config user.email "kashifsajjadkhan@users.noreply.github.com"
           git add data/ndvi.json
           git diff --cached --quiet || git commit -m "chore: weekly MODIS NDVI snapshot"
           git push
