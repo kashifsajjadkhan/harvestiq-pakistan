@@ -154,6 +154,13 @@ def scene_ndvi(token, lon, lat, date):
         red, nir, scl = arr[0].astype(np.float64), arr[1].astype(np.float64), arr[2]
     else:  # single band fallback (should not happen with 3-band evalscript)
         raise ValueError(f"unexpected raster shape {arr.shape}")
+    # DEBUG: reveal exactly what the raster contains (removed after validation)
+    uniq, counts = np.unique(scl, return_counts=True)
+    top = sorted(zip(counts.tolist(), uniq.tolist()), reverse=True)[:8]
+    print(f"DEBUG raster shape={arr.shape} dtype={arr.dtype} "
+          f"red range=({red.min():.0f},{red.max():.0f}) "
+          f"nir range=({nir.min():.0f},{nir.max():.0f}) "
+          f"scl top values(count)= {top}")
     valid = ((scl == 4) | (scl == 5)) & ((nir + red) > 0)
     clear_fraction = float(valid.sum() / valid.size) if valid.size else 0.0
     if valid.sum() == 0:
