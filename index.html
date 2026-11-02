@@ -312,9 +312,9 @@ body::before {
 .upgrade-note {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   margin-bottom: 16px;
-  padding: 7px 12px;
+  padding: 9px 14px;
   background: rgba(232,184,75,0.10);
   border: 1px solid rgba(232,184,75,0.35);
   border-radius: 999px;
@@ -322,12 +322,25 @@ body::before {
   color: var(--text-dim);
 }
 .upgrade-note-mascot {
-  width: 26px;
-  height: 26px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
   object-fit: cover;
   flex-shrink: 0;
 }
+.upgrade-note-close {
+  margin-left: auto;
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  font-size: 1.05rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: 2px 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.upgrade-note-close:hover { color: #333; background: rgba(0,0,0,0.06); }
 
 .satellite-body { padding: 20px 24px; }
 
@@ -1161,10 +1174,12 @@ body::before {
       <div class="satellite-body">
 
         <!-- Sentinel-2 upgrade note (temporary, removed at swap) -->
-        <div class="upgrade-note">
+        <div class="upgrade-note" id="upgradeNote">
           <img class="upgrade-note-mascot" src="sentinel-mascot.png" alt="">
           <span>Satellite upgrade in progress — switching to Sentinel-2 (10m) for sharper crop monitoring. Current data: MODIS.</span>
+          <button class="upgrade-note-close" aria-label="Dismiss" onclick="try{localStorage.setItem('hideUpgradeNote','1')}catch(e){}document.getElementById('upgradeNote').remove()">×</button>
         </div>
+        <script>try{if(localStorage.getItem('hideUpgradeNote')==='1'){document.getElementById('upgradeNote').remove()}}catch(e){}</script>
 
         <!-- Step 1: Select district -->
         <div style="margin-bottom:16px">
