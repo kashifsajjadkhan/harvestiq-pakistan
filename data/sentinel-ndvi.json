@@ -8,136 +8,145 @@
       "name": "Lahore",
       "lat": 31.55,
       "lon": 74.35,
-      "ndvi": 0.0,
-      "prev_ndvi": null,
+      "ndvi": 0.191,
+      "prev_ndvi": 0.0,
       "date": "2026-11-02",
-      "clear_fraction": 0.333
+      "clear_fraction": 1.0
     },
     {
       "name": "Multan",
       "lat": 30.2,
       "lon": 71.47,
-      "ndvi": 0.0,
-      "prev_ndvi": null,
+      "ndvi": 0.1042,
+      "prev_ndvi": 0.0,
       "date": "2026-10-31",
-      "clear_fraction": 0.333
+      "clear_fraction": 1.0
     },
     {
       "name": "Faisalabad",
       "lat": 31.42,
       "lon": 73.08,
-      "ndvi": 0.0047,
-      "prev_ndvi": null,
+      "ndvi": 0.233,
+      "prev_ndvi": 0.0047,
       "date": "2026-10-31",
-      "clear_fraction": 0.333
+      "clear_fraction": 1.0
     },
     {
       "name": "Bahawalpur",
       "lat": 29.4,
       "lon": 71.68,
-      "ndvi": 0.0,
-      "prev_ndvi": null,
+      "ndvi": 0.1832,
+      "prev_ndvi": 0.0,
       "date": "2026-10-31",
-      "clear_fraction": 0.333
+      "clear_fraction": 1.0
     },
     {
       "name": "Rahim Yar Khan",
       "lat": 28.42,
       "lon": 70.3,
-      "ndvi": 0.0,
-      "prev_ndvi": null,
+      "ndvi": 0.1799,
+      "prev_ndvi": 0.0,
       "date": "2026-10-29",
-      "clear_fraction": 0.333
+      "clear_fraction": 1.0
     },
     {
       "name": "Gujranwala",
       "lat": 32.15,
       "lon": 74.18,
-      "ndvi": -0.0058,
-      "prev_ndvi": null,
+      "ndvi": 0.0471,
+      "prev_ndvi": -0.0058,
       "date": "2026-11-02",
-      "clear_fraction": 0.28
+      "clear_fraction": 0.735
     },
     {
       "name": "Sialkot",
       "lat": 32.5,
       "lon": 74.53,
-      "ndvi": 0.0,
-      "prev_ndvi": null,
+      "ndvi": 0.2033,
+      "prev_ndvi": 0.0,
       "date": "2026-11-02",
-      "clear_fraction": 0.333
+      "clear_fraction": 1.0
     },
     {
       "name": "Sargodha",
       "lat": 32.08,
       "lon": 72.67,
-      "ndvi": 0.0,
-      "prev_ndvi": null,
+      "ndvi": 0.2444,
+      "prev_ndvi": 0.0,
       "date": "2026-10-31",
-      "clear_fraction": 0.333
+      "clear_fraction": 1.0
     },
     {
       "name": "Karachi",
       "lat": 24.86,
       "lon": 67.01,
-      "ndvi": 0.0,
-      "prev_ndvi": null,
+      "ndvi": 0.0944,
+      "prev_ndvi": 0.0,
       "date": "2026-11-01",
-      "clear_fraction": 0.333
+      "clear_fraction": 0.999
     },
     {
       "name": "Hyderabad",
       "lat": 25.4,
       "lon": 68.37,
-      "ndvi": 0.0,
-      "prev_ndvi": null,
+      "ndvi": 0.122,
+      "prev_ndvi": 0.0,
       "date": "2026-10-29",
-      "clear_fraction": 0.333
+      "clear_fraction": 1.0
     },
     {
       "name": "Sukkur",
       "lat": 27.7,
       "lon": 68.86,
-      "ndvi": -0.0019,
-      "prev_ndvi": null,
+      "ndvi": 0.1661,
+      "prev_ndvi": -0.0019,
       "date": "2026-10-29",
-      "clear_fraction": 0.328
+      "clear_fraction": 0.999
     },
     {
       "name": "Larkana",
       "lat": 27.56,
       "lon": 68.22,
-      "ndvi": 0.0,
-      "prev_ndvi": null,
+      "ndvi": 0.1476,
+      "prev_ndvi": 0.0,
       "date": "2026-10-29",
-      "clear_fraction": 0.333
+      "clear_fraction": 1.0
     },
     {
       "name": "Peshawar",
       "lat": 34.01,
       "lon": 71.57,
-      "ndvi": 0.003,
-      "prev_ndvi": null,
+      "ndvi": 0.1916,
+      "prev_ndvi": 0.003,
       "date": "2026-10-29",
-      "clear_fraction": 0.333
+      "clear_fraction": 1.0
+    },
+    {
+      "name": "Swat",
+      "lat": 35.22,
+      "lon": 72.42,
+      "ndvi": 0.3586,
+      "prev_ndvi": null,
+      "date": "2026-10-31",
+      "clear_fraction": 0.421
     },
     {
       "name": "Quetta",
       "lat": 30.19,
       "lon": 67.0,
-      "ndvi": 0.0,
-      "prev_ndvi": null,
+      "ndvi": 0.1052,
+      "prev_ndvi": 0.0,
       "date": "2026-11-01",
-      "clear_fraction": 0.333
+      "clear_fraction": 1.0
     },
     {
       "name": "Turbat",
       "lat": 25.99,
       "lon": 63.05,
-      "ndvi": 0.0,
-      "prev_ndvi": null,
+      "ndvi": 0.1142,
+      "prev_ndvi": 0.0,
       "date": "2026-10-30",
-      "clear_fraction": 0.333
+      "clear_fraction": 1.0
     }
   ]
 }
