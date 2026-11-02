@@ -61,7 +61,10 @@ EVALSCRIPT = """//VERSION=3
 function setup() {
   return {
     input: [{bands: ["B04", "B08", "SCL"]}],
-    output: {bands: 3, sampleType: "UINT16"}
+    // FLOAT32: B04/B08 arrive as 0-1 reflectance decimals, which UINT16
+    // output would truncate to 0/1. NDVI is scale-invariant, so decimals
+    // work fine; SCL classes (4, 5, ...) survive as exact floats.
+    output: {bands: 3, sampleType: "FLOAT32"}
   };
 }
 function evaluatePixel(sample) {
