@@ -307,6 +307,28 @@ body::before {
 
 .satellite-sub { font-size: 0.78rem; color: var(--text-dim); }
 
+/* Upgrade note: slim, quiet chip announcing the Sentinel-2 switch.
+   Removed once the swap is live. */
+.upgrade-note {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+  padding: 7px 12px;
+  background: rgba(232,184,75,0.10);
+  border: 1px solid rgba(232,184,75,0.35);
+  border-radius: 999px;
+  font-size: 0.78rem;
+  color: var(--text-dim);
+}
+.upgrade-note-mascot {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
 .satellite-body { padding: 20px 24px; }
 
 /* District selector */
@@ -1137,6 +1159,12 @@ body::before {
       </div>
 
       <div class="satellite-body">
+
+        <!-- Sentinel-2 upgrade note (temporary, removed at swap) -->
+        <div class="upgrade-note">
+          <img class="upgrade-note-mascot" src="sentinel-mascot.png" alt="">
+          <span>Satellite upgrade in progress — switching to Sentinel-2 (10m) for sharper crop monitoring. Current data: MODIS.</span>
+        </div>
 
         <!-- Step 1: Select district -->
         <div style="margin-bottom:16px">
