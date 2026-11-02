@@ -1,0 +1,39 @@
+name: Sentinel-2 NDVI test (parallel)
+
+# Test pipeline only — triggered manually. Runs the Sentinel-2 fetch alongside
+# the live MODIS pipeline and writes data/sentinel-ndvi.json on this branch.
+# The live site (main branch, data/ndvi.json) is untouched.
+# When validated, this becomes the scheduled weekly workflow.
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install requests numpy tifffile
+
+      - name: Fetch Sentinel-2 NDVI
+        env:
+          COPERNICUS_USERNAME: ${{ secrets.COPERNICUS_USERNAME }}
+          COPERNICUS_PASSWORD: ${{ secrets.COPERNICUS_PASSWORD }}
+        run: python scripts/fetch_sentinel.py
+
+      - name: Commit test snapshot
+        run: |
+          git config user.name "kashifsajjadkhan"
+          git config user.email "kashifsajjadkhan@users.noreply.github.com"
+          git add data/sentinel-ndvi.json
+          git diff --cached --quiet || git commit -m "test: Sentinel-2 NDVI snapshot (parallel)"
+          git push
