@@ -146,7 +146,10 @@ def scene_ndvi(token, lon, lat, date):
     )
     resp.raise_for_status()
     arr = imread(__import__("io").BytesIO(resp.content))
-    # tifffile returns (bands, height, width) for multi-band TIFF
+    # tifffile returns (height, width, bands) for interleaved TIFFs and
+    # (bands, height, width) for planar TIFFs; normalize to (bands, H, W).
+    if arr.ndim == 3 and arr.shape[2] == 3 and arr.shape[0] != 3:
+        arr = np.moveaxis(arr, -1, 0)
     if arr.ndim == 3:
         red, nir, scl = arr[0].astype(np.float64), arr[1].astype(np.float64), arr[2]
     else:  # single band fallback (should not happen with 3-band evalscript)
