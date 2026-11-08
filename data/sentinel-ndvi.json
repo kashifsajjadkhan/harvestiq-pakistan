@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-11-02",
+  "updated_at": "2026-11-08",
   "product": "S2MSI2A",
   "source": "Copernicus Data Space (Sentinel-2 L2A)",
   "method": "SCL-masked mean NDVI (SCL 4/5 only), >=20% clear pixels, 30-day lookback",
@@ -8,144 +8,144 @@
       "name": "Lahore",
       "lat": 31.55,
       "lon": 74.35,
-      "ndvi": 0.191,
-      "prev_ndvi": 0.0,
-      "date": "2026-11-02",
+      "ndvi": 0.3925,
+      "prev_ndvi": 0.191,
+      "date": "2026-11-07",
       "clear_fraction": 1.0
     },
     {
       "name": "Multan",
       "lat": 30.2,
       "lon": 71.47,
-      "ndvi": 0.1042,
-      "prev_ndvi": 0.0,
-      "date": "2026-10-31",
+      "ndvi": 0.0534,
+      "prev_ndvi": 0.1042,
+      "date": "2026-11-05",
       "clear_fraction": 1.0
     },
     {
       "name": "Faisalabad",
       "lat": 31.42,
       "lon": 73.08,
-      "ndvi": 0.233,
-      "prev_ndvi": 0.0047,
-      "date": "2026-10-31",
-      "clear_fraction": 1.0
+      "ndvi": 0.1692,
+      "prev_ndvi": 0.233,
+      "date": "2026-11-05",
+      "clear_fraction": 0.998
     },
     {
       "name": "Bahawalpur",
       "lat": 29.4,
       "lon": 71.68,
-      "ndvi": 0.1832,
-      "prev_ndvi": 0.0,
-      "date": "2026-10-31",
+      "ndvi": 0.1429,
+      "prev_ndvi": 0.1832,
+      "date": "2026-11-05",
       "clear_fraction": 1.0
     },
     {
       "name": "Rahim Yar Khan",
       "lat": 28.42,
       "lon": 70.3,
-      "ndvi": 0.1799,
-      "prev_ndvi": 0.0,
-      "date": "2026-10-29",
+      "ndvi": 0.1673,
+      "prev_ndvi": 0.1799,
+      "date": "2026-11-08",
       "clear_fraction": 1.0
     },
     {
       "name": "Gujranwala",
       "lat": 32.15,
       "lon": 74.18,
-      "ndvi": 0.0471,
-      "prev_ndvi": -0.0058,
-      "date": "2026-11-02",
-      "clear_fraction": 0.735
+      "ndvi": 0.1042,
+      "prev_ndvi": 0.0471,
+      "date": "2026-11-07",
+      "clear_fraction": 0.99
     },
     {
       "name": "Sialkot",
       "lat": 32.5,
       "lon": 74.53,
-      "ndvi": 0.2033,
-      "prev_ndvi": 0.0,
-      "date": "2026-11-02",
+      "ndvi": 0.2185,
+      "prev_ndvi": 0.2033,
+      "date": "2026-11-07",
       "clear_fraction": 1.0
     },
     {
       "name": "Sargodha",
       "lat": 32.08,
       "lon": 72.67,
-      "ndvi": 0.2444,
-      "prev_ndvi": 0.0,
-      "date": "2026-10-31",
+      "ndvi": 0.2099,
+      "prev_ndvi": 0.2444,
+      "date": "2026-11-05",
       "clear_fraction": 1.0
     },
     {
       "name": "Karachi",
       "lat": 24.86,
       "lon": 67.01,
-      "ndvi": 0.0944,
-      "prev_ndvi": 0.0,
-      "date": "2026-11-01",
+      "ndvi": 0.0996,
+      "prev_ndvi": 0.0944,
+      "date": "2026-11-08",
       "clear_fraction": 0.999
     },
     {
       "name": "Hyderabad",
       "lat": 25.4,
       "lon": 68.37,
-      "ndvi": 0.122,
-      "prev_ndvi": 0.0,
-      "date": "2026-10-29",
+      "ndvi": 0.1291,
+      "prev_ndvi": 0.122,
+      "date": "2026-11-08",
       "clear_fraction": 1.0
     },
     {
       "name": "Sukkur",
       "lat": 27.7,
       "lon": 68.86,
-      "ndvi": 0.1661,
-      "prev_ndvi": -0.0019,
-      "date": "2026-10-29",
+      "ndvi": 0.1625,
+      "prev_ndvi": 0.1661,
+      "date": "2026-11-08",
       "clear_fraction": 0.999
     },
     {
       "name": "Larkana",
       "lat": 27.56,
       "lon": 68.22,
-      "ndvi": 0.1476,
-      "prev_ndvi": 0.0,
-      "date": "2026-10-29",
+      "ndvi": 0.1492,
+      "prev_ndvi": 0.1476,
+      "date": "2026-11-08",
       "clear_fraction": 1.0
     },
     {
       "name": "Peshawar",
       "lat": 34.01,
       "lon": 71.57,
-      "ndvi": 0.1916,
-      "prev_ndvi": 0.003,
-      "date": "2026-10-29",
+      "ndvi": 0.1773,
+      "prev_ndvi": 0.1916,
+      "date": "2026-11-08",
       "clear_fraction": 1.0
     },
     {
       "name": "Swat",
       "lat": 35.22,
       "lon": 72.42,
-      "ndvi": 0.3586,
-      "prev_ndvi": null,
-      "date": "2026-10-31",
-      "clear_fraction": 0.421
+      "ndvi": 0.3512,
+      "prev_ndvi": 0.3586,
+      "date": "2026-11-08",
+      "clear_fraction": 0.317
     },
     {
       "name": "Quetta",
       "lat": 30.19,
       "lon": 67.0,
-      "ndvi": 0.1052,
-      "prev_ndvi": 0.0,
-      "date": "2026-11-01",
-      "clear_fraction": 1.0
+      "ndvi": 0.0847,
+      "prev_ndvi": 0.1052,
+      "date": "2026-11-03",
+      "clear_fraction": 0.94
     },
     {
       "name": "Turbat",
       "lat": 25.99,
       "lon": 63.05,
-      "ndvi": 0.1142,
-      "prev_ndvi": 0.0,
-      "date": "2026-10-30",
+      "ndvi": 0.1039,
+      "prev_ndvi": 0.1142,
+      "date": "2026-11-04",
       "clear_fraction": 1.0
     }
   ]
