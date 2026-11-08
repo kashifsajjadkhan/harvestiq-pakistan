@@ -1226,7 +1226,7 @@ body::before {
             <input id="gpsLon" class="gps-input" type="number" step="any" min="-180" max="180" placeholder="Longitude — e.g. 71.1953">
             <button class="gps-btn" id="gpsBtn" onclick="checkGpsSpot()">Check this spot</button>
           </div>
-          <div class="gps-hint" id="gpsHint">Type the latitude and longitude of a field or orchard. The tool fetches the latest clear Sentinel-2 scene for that exact spot — no account needed.</div>
+          <div class="gps-hint" id="gpsHint">Type the latitude and longitude of a field or orchard. Tip: a GPS camera app stamps the coordinates on your photo, type those numbers here. No account needed.</div>
         </div>
 
         <!-- NDVI Map Display -->
@@ -1822,7 +1822,7 @@ async function checkGpsSpot() {
   const btn = document.getElementById('gpsBtn');
   const lat = parseFloat(latEl.value);
   const lon = parseFloat(lonEl.value);
-  const hintDefault = 'Type the latitude and longitude of a field or orchard. The tool fetches the latest clear Sentinel-2 scene for that exact spot — no account needed.';
+  const hintDefault = 'Type the latitude and longitude of a field or orchard. Tip: a GPS camera app stamps the coordinates on your photo, type those numbers here. No account needed.';
   if (isNaN(lat) || isNaN(lon) || lat < -90 || lat > 90 || lon < -180 || lon > 180) {
     hint.textContent = 'Please enter a valid latitude (-90 to 90) and longitude (-180 to 180).';
     hint.style.color = '#c0392b';
