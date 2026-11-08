@@ -1,13 +1,14 @@
 name: Refresh satellite NDVI snapshot
 
-# Runs every Monday at 03:00 UTC and can also be triggered manually
-# (Actions tab -> "Refresh satellite NDVI snapshot" -> Run workflow).
-# Fetches the latest NASA MODIS NDVI for all districts and commits
-# data/ndvi.json, which the site loads from its own domain (no CORS issues).
+# DISABLED 2026-11-08 (Sentinel-2 swap): the weekly schedule is off so this
+# MODIS pipeline can no longer run automatically. It can still be triggered
+# manually (Actions tab -> "Refresh satellite NDVI snapshot" -> Run workflow).
+# The live site now reads Sentinel-2 data (data/sentinel-ndvi.json), so the
+# MODIS snapshot (data/ndvi.json) is kept only as a historical record.
 
 on:
-  schedule:
-    - cron: "0 3 * * 1"
+  # schedule: (disabled — Sentinel-2 is the live source now)
+  #   - cron: "0 3 * * 1"
   workflow_dispatch:
 
 permissions:

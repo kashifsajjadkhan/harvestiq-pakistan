@@ -24,6 +24,7 @@ from datetime import datetime, timedelta, timezone
 
 import numpy as np
 import requests
+from PIL import Image
 from tifffile import imread
 
 IDENTITY_URL = "https://identity.dataspace.copernicus.eu/auth/realms/CDSE/protocol/openid-connect/token"
@@ -56,6 +57,45 @@ LOOKBACK_DAYS = 30
 MAX_CANDIDATES = 8        # newest scenes to try per district
 MIN_CLEAR_FRACTION = 0.20 # reject scenes with fewer clear pixels
 OUTPUT_PATH = "data/sentinel-ndvi.json"
+PICS_DIR = os.path.join("data", "ndvi-pics")
+
+# NDVI colour ramp (Copernicus-style): tan = bare soil, green = healthy crop,
+# grey = not clear (cloud / water / shadow). Anchors are (ndvi, r, g, b).
+_NDVI_RAMP = [
+    (-1.0, 60, 60, 120),
+    (0.0, 170, 120, 60),
+    (0.15, 210, 180, 80),
+    (0.30, 190, 205, 70),
+    (0.45, 110, 195, 70),
+    (0.60, 50, 175, 60),
+    (0.80, 20, 130, 40),
+    (1.0, 10, 100, 25),
+]
+
+
+def district_slug(name):
+    return name.lower().replace(" ", "-")
+
+
+def render_ndvi_png(red, nir, scl):
+    """Render the real per-pixel NDVI picture (PIL Image, 2x nearest).
+
+    Every displayed pixel is one real 10 m Sentinel-2 measurement, coloured
+    by its NDVI value. Non-clear pixels (cloud / water / shadow) are grey.
+    """
+    valid = ((scl == 4) | (scl == 5)) & ((nir + red) > 0)
+    with np.errstate(divide="ignore", invalid="ignore"):
+        ndvi = np.where(valid, (nir - red) / (nir + red), np.nan)
+    xs = np.array([p[0] for p in _NDVI_RAMP], dtype=np.float64)
+    img = np.zeros((*ndvi.shape, 3), dtype=np.uint8)
+    filled = np.nan_to_num(ndvi, nan=-1.0)
+    for ch in range(3):
+        ys = np.array([p[ch + 1] for p in _NDVI_RAMP], dtype=np.float64)
+        img[..., ch] = np.interp(filled, xs, ys).astype(np.uint8)
+    img[~valid] = (128, 128, 128)
+    pil = Image.fromarray(img, mode="RGB")
+    w, h = pil.size
+    return pil.resize((w * 2, h * 2), Image.NEAREST)
 
 EVALSCRIPT = """//VERSION=3
 function setup() {
@@ -119,7 +159,11 @@ def candidate_scenes(token, lon, lat, start, end):
 
 
 def scene_ndvi(token, lon, lat, date):
-    """Fetch one day's raster and compute masked mean NDVI + clear fraction."""
+    """Fetch one day's raster and compute masked mean NDVI + clear fraction.
+
+    Returns (ndvi_mean, clear_fraction, red, nir, scl) so the caller can
+    render the real NDVI picture for the accepted scene.
+    """
     min_lon, max_lon = lon - HALF_BOX_DEG, lon + HALF_BOX_DEG
     min_lat, max_lat = lat - HALF_BOX_DEG, lat + HALF_BOX_DEG
     width = max(10, round((max_lon - min_lon) * 111320 * math.cos(math.radians(lat)) / 10))
@@ -160,9 +204,9 @@ def scene_ndvi(token, lon, lat, date):
     valid = ((scl == 4) | (scl == 5)) & ((nir + red) > 0)
     clear_fraction = float(valid.sum() / valid.size) if valid.size else 0.0
     if valid.sum() == 0:
-        return None, clear_fraction
+        return None, clear_fraction, red, nir, scl
     ndvi = ((nir - red) / (nir + red))[valid]
-    return float(ndvi.mean()), clear_fraction
+    return float(ndvi.mean()), clear_fraction, red, nir, scl
 
 
 def main():
@@ -195,7 +239,7 @@ def main():
         accepted = None
         for scene in scenes:
             try:
-                ndvi, clear = scene_ndvi(token, lon, lat, scene["date"])
+                ndvi, clear, red, nir, scl = scene_ndvi(token, lon, lat, scene["date"])
             except Exception as exc:
                 print(f"{name}: {scene['date']} raster failed ({exc})")
                 continue
@@ -203,6 +247,12 @@ def main():
             if ndvi is not None and clear >= MIN_CLEAR_FRACTION:
                 accepted = {"date": scene["date"], "ndvi": round(ndvi, 4),
                             "clear_fraction": round(clear, 3)}
+                # Real NDVI picture for this district, from the same scene
+                # and the same pixels as the number above.
+                os.makedirs(PICS_DIR, exist_ok=True)
+                pic_path = os.path.join(PICS_DIR, district_slug(name) + ".png")
+                render_ndvi_png(red, nir, scl).save(pic_path)
+                print(f"{name}: picture saved {pic_path}")
                 break
         if accepted is None:
             prev = previous.get(name)

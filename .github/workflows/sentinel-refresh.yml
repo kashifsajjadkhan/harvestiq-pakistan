@@ -1,18 +1,20 @@
-name: Sentinel-2 NDVI test (parallel)
+name: Sentinel-2 NDVI weekly
 
-# Test pipeline only — triggered manually. Runs the Sentinel-2 fetch alongside
-# the live MODIS pipeline and writes data/sentinel-ndvi.json on this branch.
-# The live site (main branch, data/ndvi.json) is untouched.
-# When validated, this becomes the scheduled weekly workflow.
+# Live weekly pipeline: Sentinel-2 NDVI for all 16 districts, every Monday
+# 03:00 UTC (08:00 PKT). Writes data/sentinel-ndvi.json (the live snapshot)
+# and one real NDVI picture per district in data/ndvi-pics/.
+# Manual runs are still possible via workflow_dispatch.
 
 on:
+  schedule:
+    - cron: "0 3 * * 1"
   workflow_dispatch:
 
 permissions:
   contents: write
 
 jobs:
-  test:
+  fetch:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -22,7 +24,7 @@ jobs:
           python-version: "3.11"
 
       - name: Install dependencies
-        run: pip install requests numpy tifffile
+        run: pip install requests numpy tifffile pillow
 
       - name: Fetch Sentinel-2 NDVI
         env:
@@ -30,10 +32,10 @@ jobs:
           COPERNICUS_PASSWORD: ${{ secrets.COPERNICUS_PASSWORD }}
         run: python scripts/fetch_sentinel.py
 
-      - name: Commit test snapshot
+      - name: Commit weekly snapshot
         run: |
           git config user.name "kashifsajjadkhan"
           git config user.email "kashifsajjadkhan@users.noreply.github.com"
-          git add data/sentinel-ndvi.json
-          git diff --cached --quiet || git commit -m "test: Sentinel-2 NDVI snapshot (parallel)"
+          git add data/sentinel-ndvi.json data/ndvi-pics/
+          git diff --cached --quiet || git commit -m "Sentinel-2 NDVI weekly snapshot"
           git push
