@@ -548,6 +548,14 @@ body::before {
 .fetch-satellite-btn:hover { background: linear-gradient(135deg, #245683, #2d6fa0); transform: translateY(-1px); }
 .fetch-satellite-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
 
+/* GPS spot check: type coordinates, get the NDVI for that exact spot. */
+.gps-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.gps-input { flex: 1 1 140px; min-width: 0; padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px; font-family: 'IBM Plex Sans', sans-serif; font-size: 0.9rem; color: var(--text); background: #fff; }
+.gps-input:focus { outline: none; border-color: #1c6fa8; }
+.gps-btn { padding: 10px 18px; background: linear-gradient(135deg, #1a3a5c, #245683); border: 1px solid rgba(106,176,232,0.4); border-radius: 8px; color: #fff; font-family: 'IBM Plex Sans', sans-serif; font-size: 0.9rem; font-weight: 600; cursor: pointer; white-space: nowrap; }
+.gps-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.gps-hint { font-size: 0.78rem; color: var(--text-dim); margin-top: 8px; }
+
 .proceed-btn {
   width: 100%;
   padding: 14px;
@@ -1208,13 +1216,26 @@ body::before {
           <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:6px" id="satCropGrid"></div>
         </div>
 
+        <!-- Or check any spot by GPS -->
+        <div style="margin-bottom:16px">
+          <div style="font-size:0.78rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:10px">
+            Or check any spot by GPS
+          </div>
+          <div class="gps-row">
+            <input id="gpsLat" class="gps-input" type="number" step="any" min="-90" max="90" placeholder="Latitude — e.g. 31.5275">
+            <input id="gpsLon" class="gps-input" type="number" step="any" min="-180" max="180" placeholder="Longitude — e.g. 71.1953">
+            <button class="gps-btn" id="gpsBtn" onclick="checkGpsSpot()">Check this spot</button>
+          </div>
+          <div class="gps-hint" id="gpsHint">Type the latitude and longitude of a field or orchard. The tool fetches the latest clear Sentinel-2 scene for that exact spot — no account needed.</div>
+        </div>
+
         <!-- NDVI Map Display -->
         <div class="ndvi-map-container">
           <div class="ndvi-map-header">
             <span class="ndvi-map-title" id="ndviMapTitle"> NDVI MAP — SELECT DISTRICT TO LOAD</span>
             <span class="ndvi-date" id="ndviDate"></span>
           </div>
-          <p class="data-note">Each picture is the real Sentinel-2 NDVI for the selected district — 10 m pixels, cloud-masked. Source: Copernicus Data Space.</p>
+          <p class="data-note" id="ndviDataNote">Each picture is the real Sentinel-2 NDVI for the selected district — 10 m pixels, cloud-masked. Source: Copernicus Data Space.</p>
           <div class="ndvi-display" id="ndviDisplay">
             <div class="ndvi-overlay" id="ndviOverlay">
               <div style="font-size:2.5rem;margin-bottom:8px;opacity:0.3"></div>
@@ -1753,6 +1774,7 @@ async function fetchSatelliteData() {
 
   // Real Sentinel-2 NDVI picture for the district.
   const pic = document.getElementById('ndviPic');
+  pic.onerror = null;
   pic.src = picUrl;
   pic.style.display = 'block';
   overlay.innerHTML = '';
@@ -1770,6 +1792,8 @@ async function fetchSatelliteData() {
     : `Modeled estimate · ${dateStr} · live feed unavailable`;
   dateEl.classList.remove('live', 'demo');
   dateEl.classList.add(isReal ? 'live' : 'demo');
+  const dataNote = document.getElementById('ndviDataNote');
+  if (dataNote) dataNote.textContent = 'Each picture is the real Sentinel-2 NDVI for the selected district — 10 m pixels, cloud-masked. Source: Copernicus Data Space.';
 
   satelliteData = { ndvi, district: district.name, crop: crop.en, status: statusLabel, real: isReal };
 
@@ -1777,6 +1801,137 @@ async function fetchSatelliteData() {
   document.getElementById('satIcon').classList.remove('scanning');
   btn.disabled = false;
   btn.innerHTML = ' Refresh Satellite Data';
+}
+
+// ============================================================
+// --- GPS spot check ---
+// Type latitude/longitude, get the Sentinel-2 NDVI for that exact spot,
+// live from Microsoft Planetary Computer (public, no login, no credentials
+// in the page). STAC finds the latest clear scene; the titiler returns the
+// NDVI at the point and renders the picture. Same cloud mask (SCL 4/5) and
+// same (B08-B04)/(B08+B04) formula as the pipeline. This is a standalone
+// lookup: it does not touch satelliteData or the post-harvest risk model.
+const PC_STAC = 'https://planetarycomputer.microsoft.com/api/stac/v1/search';
+const PC_TITILER = 'https://planetarycomputer.microsoft.com/api/data/v1';
+const GPS_NDVI_EXPR = 'where((SCL==4)|(SCL==5),(B08-B04)/(B08+B04),-1)';
+
+async function checkGpsSpot() {
+  const latEl = document.getElementById('gpsLat');
+  const lonEl = document.getElementById('gpsLon');
+  const hint = document.getElementById('gpsHint');
+  const btn = document.getElementById('gpsBtn');
+  const lat = parseFloat(latEl.value);
+  const lon = parseFloat(lonEl.value);
+  const hintDefault = 'Type the latitude and longitude of a field or orchard. The tool fetches the latest clear Sentinel-2 scene for that exact spot — no account needed.';
+  if (isNaN(lat) || isNaN(lon) || lat < -90 || lat > 90 || lon < -180 || lon > 180) {
+    hint.textContent = 'Please enter a valid latitude (-90 to 90) and longitude (-180 to 180).';
+    hint.style.color = '#c0392b';
+    return;
+  }
+  hint.style.color = '';
+  hint.textContent = hintDefault;
+  btn.disabled = true;
+  btn.textContent = 'Checking...';
+  document.getElementById('satIcon').classList.add('scanning');
+  const overlay = document.getElementById('ndviOverlay');
+  overlay.innerHTML = '<div class="ndvi-spinner"></div><div class="ndvi-loading">Finding the latest clear Sentinel-2 scene for this spot...</div>';
+  document.getElementById('ndviPic').style.display = 'none';
+  document.getElementById('ndviResults').classList.remove('visible');
+  document.getElementById('proceedBtn').classList.remove('visible');
+
+  const fail = (msg) => {
+    overlay.innerHTML = `<div style="font-size:0.82rem;color:var(--text-dim)">${msg}</div>`;
+    document.getElementById('ndviDate').textContent = '';
+    btn.disabled = false;
+    btn.textContent = 'Check this spot';
+    document.getElementById('satIcon').classList.remove('scanning');
+  };
+
+  try {
+    // Latest clear scenes at this point, last 30 days, newest first.
+    const end = new Date();
+    const start = new Date(Date.now() - 30 * 24 * 3600 * 1000);
+    const iso = d => d.toISOString().slice(0, 10);
+    const datetime = `${iso(start)}T00:00:00Z/${iso(end)}T23:59:59Z`;
+    const stacRes = await fetch(PC_STAC, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        collections: ['sentinel-2-l2a'],
+        intersects: { type: 'Point', coordinates: [lon, lat] },
+        datetime,
+        query: { 'eo:cloud_cover': { lt: 20 } },
+        sortby: [{ field: 'datetime', direction: 'desc' }],
+        limit: 5
+      })
+    });
+    if (!stacRes.ok) throw new Error('stac');
+    const stac = await stacRes.json();
+    const scenes = stac.features || [];
+    if (!scenes.length) { fail('No Sentinel-2 scenes for this spot in the last 30 days.'); return; }
+
+    // Try scenes newest-first until the exact point is clear (SCL 4/5).
+    // The where-expression returns -1 when the point is cloudy or water.
+    let found = null;
+    for (const scene of scenes) {
+      const itemId = scene.id;
+      const ptUrl = `${PC_TITILER}/item/point/${lon},${lat}?collection=sentinel-2-l2a&item=${encodeURIComponent(itemId)}&assets=B04&assets=B08&assets=SCL&expression=${encodeURIComponent(GPS_NDVI_EXPR)}&asset_as_band=true`;
+      let pt;
+      try {
+        const r = await fetch(ptUrl);
+        if (!r.ok) continue;
+        pt = await r.json();
+      } catch (e) { continue; }
+      const v = pt.values && pt.values[0];
+      if (typeof v === 'number' && v > -0.9) {
+        found = { itemId, ndvi: v, date: (scene.properties.datetime || '').slice(0, 10) };
+        break;
+      }
+    }
+    if (!found) { fail('No clear view of this spot in the last 30 days — clouds in the way. Try again later.'); return; }
+
+    // Picture: ~2 km box around the point, cloud-masked NDVI, red-yellow-green.
+    const half = 0.01;
+    const bbox = `${lon - half},${lat - half},${lon + half},${lat + half}`;
+    const picUrl = `${PC_TITILER}/item/bbox/${bbox}/400x400.png?collection=sentinel-2-l2a&item=${encodeURIComponent(found.itemId)}&assets=B04&assets=B08&assets=SCL&expression=${encodeURIComponent(GPS_NDVI_EXPR)}&asset_as_band=true&rescale=-0.1,0.8&colormap_name=rdylgn`;
+
+    const ndvi = found.ndvi;
+    const note = ndvi >= 0.6 ? 'Dense green vegetation'
+      : ndvi >= 0.4 ? 'Healthy green vegetation'
+      : ndvi >= 0.2 ? 'Moderate vegetation'
+      : ndvi >= 0.1 ? 'Sparse vegetation'
+      : 'Mostly bare soil';
+    const numColor = ndvi >= 0.4 ? '#27ae60' : ndvi >= 0.2 ? '#e67e22' : '#c0392b';
+    const sceneDate = new Date(found.date + 'T00:00:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+
+    const pic = document.getElementById('ndviPic');
+    pic.onerror = function() {
+      pic.style.display = 'none';
+      overlay.innerHTML = '<div style="font-size:0.82rem;color:var(--text-dim)">The NDVI number below is the reading for this spot. The satellite picture did not load — try again.</div>';
+    };
+    pic.src = picUrl;
+    pic.alt = `Sentinel-2 NDVI picture for ${lat}, ${lon}`;
+    pic.style.display = 'block';
+    overlay.innerHTML = '';
+    document.getElementById('ndviCurrent').textContent = ndvi.toFixed(3);
+    document.getElementById('ndviCurrent').style.color = numColor;
+    document.getElementById('ndviNote').textContent = note;
+    document.getElementById('ndviResults').classList.add('visible');
+    document.getElementById('ndviMapTitle').textContent = ` NDVI — GPS ${lat}, ${lon}`;
+    const dateEl = document.getElementById('ndviDate');
+    dateEl.textContent = `Sentinel-2 · ${sceneDate} · live GPS lookup`;
+    dateEl.classList.remove('demo');
+    dateEl.classList.add('live');
+    const dataNote = document.getElementById('ndviDataNote');
+    if (dataNote) dataNote.textContent = 'Each picture is the real Sentinel-2 NDVI for the entered coordinates — 10 m pixels, cloud-masked. Source: Microsoft Planetary Computer.';
+  } catch (e) {
+    console.warn('GPS spot check failed', e);
+    fail('Could not reach the satellite service. Check your connection and try again.');
+    return;
+  }
+  btn.disabled = false;
+  btn.textContent = 'Check this spot';
+  document.getElementById('satIcon').classList.remove('scanning');
 }
 
 // ============================================================
