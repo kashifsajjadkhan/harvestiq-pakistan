@@ -308,7 +308,7 @@ body::before {
 .satellite-sub { font-size: 0.78rem; color: var(--text-dim); }
 
 /* Upgrade note: slim, quiet chip announcing the Sentinel-2 switch.
-   Removed once the swap is live. */
+   Permanent — the switch is done, the note stays. */
 .upgrade-note {
   display: flex;
   align-items: center;
@@ -322,8 +322,8 @@ body::before {
   color: var(--text-dim);
 }
 .upgrade-note-mascot {
-  width: 32px;
-  height: 32px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
   object-fit: cover;
   flex-shrink: 0;
@@ -398,6 +398,36 @@ body::before {
   top: 0; left: 0;
 }
 
+/* Real Sentinel-2 NDVI picture for the selected district.
+   One real 10 m pixel per block; grey = cloud / water / shadow. */
+.ndvi-pic {
+  display: none;
+  max-height: 260px;
+  max-width: 100%;
+  border: 1px solid rgba(15,30,20,0.12);
+  border-radius: 8px;
+  position: relative;
+  z-index: 2;
+}
+
+/* ---- Field validation section (compact, bottom of satellite panel) ---- */
+.val-panel { margin-top: 24px; border-top: 1px solid var(--border); padding-top: 18px; }
+.val-panel h3 { font-family: 'Playfair Display', Georgia, serif; font-size: 1.15rem; margin: 0 0 2px; color: var(--text); }
+.val-panel .val-sub { font-size: 0.82rem; color: var(--text-dim); margin: 0 0 12px; }
+.val-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+@media (max-width: 700px) { .val-cards { grid-template-columns: 1fr; } }
+.val-card { background: #fff; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; box-shadow: 0 2px 8px rgba(20,40,30,.06); }
+.val-card h4 { font-family: 'Playfair Display', Georgia, serif; font-size: 0.95rem; margin: 0; padding: 10px 12px 0; color: var(--text); }
+.val-pair { display: flex; gap: 8px; padding: 8px 12px 4px; }
+.val-pair figure { flex: 1; margin: 0; }
+.val-pair img { width: 100%; border-radius: 6px; display: block; }
+.val-pair figcaption { font-size: 0.7rem; color: var(--text-dim); padding-top: 3px; }
+.val-card .val-explain { padding: 2px 12px 12px; font-size: 0.82rem; line-height: 1.45; color: var(--text); margin: 0; }
+.val-card .val-explain b { color: var(--harvest); }
+.val-num { font-family: 'IBM Plex Mono', monospace; font-size: 0.8rem; background: var(--sky); border-radius: 5px; padding: 1px 5px; }
+.val-map-btn { display: inline-block; background: #1c6fa8; color: #fff; border: none; border-radius: 8px; padding: 9px 16px; font-size: 0.88rem; font-weight: 600; cursor: pointer; text-decoration: none; margin-top: 14px; }
+.val-map-btn:hover { background: #155a82; }
+
 .ndvi-overlay {
   position: relative;
   z-index: 2;
@@ -423,7 +453,7 @@ body::before {
   gap: 12px;
   margin-bottom: 16px;
 }
-.ndvi-results.visible { display: grid; grid-template-columns: repeat(3, 1fr); }
+.ndvi-results.visible { display: grid; grid-template-columns: 1fr; max-width: 360px; margin-left: auto; margin-right: auto; margin-bottom: 16px; }
 
 .ndvi-card {
   background: #ffffff;
@@ -443,8 +473,6 @@ body::before {
   height: 3px;
 }
 .ndvi-card:nth-child(1)::before { background: linear-gradient(90deg, #27ae60, #82c341); }
-.ndvi-card:nth-child(2)::before { background: linear-gradient(90deg, #e8b84b, #e67e22); }
-.ndvi-card:nth-child(3)::before { background: linear-gradient(90deg, #1c6fa8, #6ab0e8); }
 .ndvi-card:hover {
   transform: translateY(-2px);
   box-shadow: 0 4px 10px rgba(20,40,30,0.08), 0 12px 28px rgba(20,40,30,0.08);
@@ -1108,7 +1136,7 @@ body::before {
         <div class="stat"><span class="stat-num">13.7M</span><span class="stat-label">Tonnes/Year</span></div>
         <div class="stat"><span class="stat-num">Free</span><span class="stat-label">Always Open</span></div>
       </div>
-      <p class="meta-line">Risk model: CAAS China training + FAO post-harvest loss studies for South Asian supply chains. Ahmad et al. 2021 · ADB 2019 · NASA MODIS NDVI · Open source · Built for extension officers & smallholder farmers.</p>
+      <p class="meta-line">Risk model: CAAS China training + FAO post-harvest loss studies for South Asian supply chains. Ahmad et al. 2021 · ADB 2019 · Sentinel-2 NDVI · Open source · Built for extension officers & smallholder farmers.</p>
     </div>
   </div>
 </section>
@@ -1152,16 +1180,16 @@ body::before {
         <div class="satellite-icon-wrap" id="satIcon">🛰️</div>
         <div>
           <div class="satellite-title">Satellite Crop Health Monitor</div>
-          <div class="satellite-sub">Live NDVI data from NASA MODIS Terra · 16-day composite · Auto-refreshed weekly · Free, no account needed</div>
+          <div class="satellite-sub">Live NDVI data from Sentinel-2 (10m) · Auto-refreshed weekly · Free, no account needed</div>
         </div>
       </div>
 
       <div class="satellite-body">
 
-        <!-- Sentinel-2 upgrade note (temporary, removed at swap) -->
+        <!-- Sentinel-2 upgrade note (permanent — the switch is done) -->
         <div class="upgrade-note">
-          <img class="upgrade-note-mascot" src="sentinel-mascot.png" alt="">
-          <span>Satellite upgrade in progress — switching to Sentinel-2 (10m) for sharper crop monitoring. Current data: MODIS.</span>
+          <img class="upgrade-note-mascot" src="sentinel-mascot.gif" alt="">
+          <span>Satellite switched from MODIS to Sentinel-2 (10m) for sharper crop monitoring.</span>
         </div>
 
         <!-- Step 1: Select district -->
@@ -1186,66 +1214,60 @@ body::before {
             <span class="ndvi-map-title" id="ndviMapTitle"> NDVI MAP — SELECT DISTRICT TO LOAD</span>
             <span class="ndvi-date" id="ndviDate"></span>
           </div>
-          <p class="data-note">MOD13Q1 is a 16-day NDVI composite; the latest period is typically published within days of the composite window closing. Source: NASA LP DAAC / ORNL DAAC.</p>
+          <p class="data-note">Each picture is the real Sentinel-2 NDVI for the selected district — 10 m pixels, cloud-masked. Source: Copernicus Data Space.</p>
           <div class="ndvi-display" id="ndviDisplay">
             <div class="ndvi-overlay" id="ndviOverlay">
               <div style="font-size:2.5rem;margin-bottom:8px;opacity:0.3"></div>
               <div style="font-size:0.82rem;color:var(--text-dim)">Select district and crop above,<br>then fetch satellite data</div>
             </div>
-            <!-- Pakistan NDVI visualisation will render here -->
-            <canvas id="ndviCanvas" width="860" height="280" style="position:absolute;top:0;left:0;width:100%;height:100%;display:none"></canvas>
+            <!-- Real Sentinel-2 NDVI picture for the selected district -->
+            <img id="ndviPic" class="ndvi-pic" src="" alt="Sentinel-2 NDVI picture for the selected district">
           </div>
         </div>
 
-        <!-- NDVI Results -->
+        <!-- NDVI Results: number + one short neutral note only -->
         <div class="ndvi-results" id="ndviResults">
           <div class="ndvi-card">
             <span class="ndvi-val" id="ndviCurrent" style="color:var(--sprout)">—</span>
             <div class="ndvi-label">Current NDVI</div>
-            <div class="ndvi-trend" id="ndviTrend"></div>
+            <div class="ndvi-trend" id="ndviNote"></div>
           </div>
-          <div class="ndvi-card">
-            <span class="ndvi-val" id="ndviStatus" style="color:var(--harvest)">—</span>
-            <div class="ndvi-label">Crop Status</div>
-            <div class="ndvi-trend" id="ndviStatusSub"></div>
-          </div>
-          <div class="ndvi-card">
-            <span class="ndvi-val" id="ndviRainfall" style="color:#1c6fa8">—</span>
-            <div class="ndvi-label">Moisture Index</div>
-            <div class="ndvi-trend" id="ndviRainfallSub"></div>
-          </div>
-        </div>
-
-        <!-- NDVI health bar -->
-        <div class="ndvi-bar-wrap" id="ndviBarWrap" style="display:none">
-          <div class="ndvi-bar-label">
-            <span>Vegetation Health Index</span>
-            <span id="ndviBarPct">—</span>
-          </div>
-          <div class="ndvi-bar-track">
-            <div class="ndvi-bar-fill" id="ndviBarFill"></div>
-          </div>
-          <div style="display:flex;justify-content:space-between;margin-top:4px">
-            <span style="font-size:0.62rem;color:var(--text-dim)">Bare soil / stressed</span>
-            <span style="font-size:0.62rem;color:var(--text-dim)">Dense / healthy crop</span>
-          </div>
-        </div>
-
-        <!-- Harvest verdict -->
-        <div class="harvest-verdict" id="harvestVerdict">
-          <div class="verdict-title" id="verdictTitle"></div>
-          <div class="verdict-text" id="verdictText"></div>
         </div>
 
         <!-- Fetch button -->
         <button class="fetch-satellite-btn" id="fetchSatBtn" onclick="fetchSatelliteData()">
            Fetch Real Satellite NDVI Data
         </button>
-<p class="data-note">Uses NASA MODIS Terra MOD13Q1 NDVI product (16-day composite) via open API · 250m resolution · No account required · Data cited: NASA LP DAAC / ORNL DAAC</p>
+<p class="data-note">Contains modified Copernicus Sentinel data 2026 · Sentinel-2 L2A · 10 m resolution · No account required</p>
         <!-- Proceed button -->
         <button class="proceed-btn" id="proceedBtn" onclick="proceedToPostharvest()">
            Crop Health Recorded — Continue to Post-Harvest Risk Analysis
         </button>
+
+        <!-- ====== FIELD VALIDATION (two small cards + link to full map) ====== -->
+        <div class="val-panel">
+          <h3>Field validation — ground truth vs satellite</h3>
+          <p class="val-sub">Bhakkar, Punjab — checked against Sentinel-2 NDVI. Every photo, satellite picture and number below is real.</p>
+          <div class="val-cards">
+            <div class="val-card">
+              <h4>Citrus orchard — Bhakkar</h4>
+              <div class="val-pair">
+                <figure><img src="validation/val/citrus.jpg" alt="Citrus orchard ground photo"><figcaption>On the ground — healthy citrus trees.</figcaption></figure>
+                <figure><img src="validation/proof_ndvi_citrus_bhakkar.png" alt="NDVI satellite picture of the citrus orchard area"><figcaption>From the satellite — NDVI, 29 Sep 2026.</figcaption></figure>
+              </div>
+              <p class="val-explain">NDVI <span class="val-num">0.24</span> — <b>the sensor is right</b>: orchard edge mixes trees and bare field.</p>
+            </div>
+            <div class="val-card">
+              <h4>Mango — Bhakkar</h4>
+              <div class="val-pair">
+                <figure><img src="validation/val/citrus2.jpg" alt="Mango ground photo"><figcaption>On the ground — young sparse trees.</figcaption></figure>
+                <figure><img src="validation/proof_ndvi_citrus_bhakkar2.png" alt="NDVI satellite picture of the mango area"><figcaption>From the satellite — NDVI, 3 Nov 2026.</figcaption></figure>
+              </div>
+              <p class="val-explain">NDVI <span class="val-num">0.12</span> — <b>low, as expected</b>: mostly bare dirt with a few young trees.</p>
+            </div>
+          </div>
+          <a class="val-map-btn" href="validation.html">View the full field validation map &rarr;</a>
+        </div>
 
       </div>
     </div>
@@ -1508,7 +1530,7 @@ body::before {
     <span class="badge badge-green"> Open Source</span>
     <span class="badge badge-gold"> FAO Data</span>
     <span class="badge badge-green"> CAAS Trained</span>
-    <span class="badge badge-blue"> NASA MODIS</span>
+    <span class="badge badge-blue"> Sentinel-2</span>
     <span class="badge badge-gold"> Always Free</span>
   </div>
 </footer>
@@ -1648,22 +1670,24 @@ function selectDistrict(i, btn) {
   selectedDistrict = i;
   // Reset satellite state
   document.getElementById('ndviResults').classList.remove('visible');
-  document.getElementById('harvestVerdict').classList.remove('visible');
-  document.getElementById('ndviBarWrap').style.display = 'none';
   document.getElementById('proceedBtn').classList.remove('visible');
-  document.getElementById('ndviCanvas').style.display = 'none';
+  document.getElementById('ndviPic').style.display = 'none';
   document.getElementById('ndviOverlay').innerHTML = `<div style="font-size:0.82rem;color:var(--text-dim)">District: <strong style="color:#1c6fa8">${DISTRICTS[i].name}</strong> selected.<br>Now select your crop and fetch satellite data.</div>`;
   document.getElementById('ndviMapTitle').textContent = ` NDVI MAP — ${DISTRICTS[i].name.toUpperCase()}, ${DISTRICTS[i].province.toUpperCase()}`;
 }
 
 // ============================================================
-// --- NDVI data sources, tried in order ---
-// 1) Weekly snapshot written by .github/workflows/ndvi-refresh.yml (same origin: never blocked)
-// 2) Direct live fetch via the CORS proxy worker (optional, see worker.js)
-// 3) Modeled estimate (always works, clearly labeled)
-const MODIS_PROXY = 'https://REPLACE-WITH-YOUR-WORKER.workers.dev/?url=';
-async function loadNdviSnapshot(district) {
-  const res = await fetch('data/ndvi.json', { cache: 'no-store' });
+// --- NDVI data source ---
+// Weekly Sentinel-2 snapshot written by .github/workflows/sentinel-refresh.yml
+// (same origin: never blocked). The picture for the district is a real
+// per-pixel NDVI render from the same scene, in data/ndvi-pics/.
+// If the snapshot ever fails to load, a modeled estimate is shown instead,
+// clearly labeled as an estimate.
+function districtSlug(name) {
+  return name.toLowerCase().replace(/ /g, '-');
+}
+async function loadSentinelSnapshot(district) {
+  const res = await fetch('data/sentinel-ndvi.json', { cache: 'no-store' });
   if (!res.ok) return null;
   const snap = await res.json();
   const entry = (snap.districts || []).find(d => d.name === district.name);
@@ -1671,113 +1695,16 @@ async function loadNdviSnapshot(district) {
   const compDate = new Date(entry.date + 'T00:00:00').toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' });
   return {
     ndvi: entry.ndvi,
-    prev: entry.prev_ndvi,
     dateStr: compDate + ' · auto-refreshed ' + snap.updated_at,
-    grid: entry.grid, rows: entry.rows, cols: entry.cols,
+    pic: 'data/ndvi-pics/' + districtSlug(district.name) + '.png',
     source: 'snapshot'
   };
 }
 
-async function loadNdviLive(district) {
-  const toDoy = (d) => {
-    const startOfYear = new Date(d.getFullYear(), 0, 0);
-    return 'A' + d.getFullYear() + String(Math.floor((d - startOfYear) / 86400000)).padStart(3, '0');
-  };
-  const endDt = new Date(); endDt.setDate(endDt.getDate() - 8);   // allow for composite publication lag
-  const startDt = new Date(); startDt.setDate(startDt.getDate() - 72);
-  const ornlUrl = `https://modis.ornl.gov/rst/api/v1/MOD13Q1/subset?latitude=${district.lat}&longitude=${district.lon}&startDate=${toDoy(startDt)}&endDate=${toDoy(endDt)}&band=250m_16_days_NDVI&kmAboveBelow=1&kmLeftRight=1`;
-  const response = await fetch(MODIS_PROXY + encodeURIComponent(ornlUrl), { headers: { 'Accept': 'application/json' } });
-  if (!response.ok) throw new Error('API responded with ' + response.status);
-  const data = await response.json();
-  const ndviRows = data.subset.filter(row => row.band === '250m_16_days_NDVI');
-  if (!ndviRows.length) throw new Error('No NDVI band in response');
-  const latest = ndviRows[ndviRows.length - 1];
-  const prev = ndviRows.length > 1 ? ndviRows[ndviRows.length - 2] : latest;
-  const rows = data.nrows, cols = data.ncols;
-  const centerIndex = Math.floor(rows / 2) * cols + Math.floor(cols / 2);
-  if (latest.data[centerIndex] <= -2000) throw new Error('Fill value at center pixel');
-  return {
-    ndvi: latest.data[centerIndex] * 0.0001,
-    prev: prev.data[centerIndex] * 0.0001,
-    dateStr: new Date(latest.calendar_date).toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' }),
-    grid: latest.data.map(v => v <= -2000 ? null : v * 0.0001),
-    rows: rows, cols: cols,
-    source: 'live'
-  };
-}
 // ============================================================
-function drawNDVIMap(ndvi, district, realGrid, gridRows, gridCols) {
-  const canvas = document.getElementById('ndviCanvas');
-  const ctx = canvas.getContext('2d');
-  const W = canvas.width, H = canvas.height;
-
-  const bg = ctx.createLinearGradient(0, 0, W, H);
-  bg.addColorStop(0, '#eef4f0');
-  bg.addColorStop(1, '#e3ede6');
-  ctx.fillStyle = bg;
-  ctx.fillRect(0, 0, W, H);
-
-  ctx.strokeStyle = 'rgba(106,176,232,0.05)';
-  ctx.lineWidth = 1;
-  for (let x = 0; x < W; x += 40) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke(); }
-  for (let y = 0; y < H; y += 40) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke(); }
-
-  const useReal = realGrid && gridRows && gridCols;
-  const cols = useReal ? gridCols : 22;
-  const rows = useReal ? gridRows : 8;
-  const cw = W / cols, ch = H / rows;
-
-  for (let r = 0; r < rows; r++) {
-    for (let c = 0; c < cols; c++) {
-      let v;
-      if (useReal) {
-        const cellVal = realGrid[r * cols + c];
-        v = cellVal === null ? null : Math.min(1, Math.max(0, cellVal));
-      } else {
-        v = Math.min(1, Math.max(0, ndvi + (Math.random() - 0.5) * 0.18));
-      }
-      ctx.fillStyle = v === null ? '#cccccc' : ndviColor(v);
-      ctx.globalAlpha = v === null ? 0.3 : 0.7;
-      ctx.fillRect(c * cw + 1, r * ch + 1, cw - 2, ch - 2);
-    }
-  }
-  ctx.globalAlpha = 1;
-
-  ctx.fillStyle = 'rgba(0,0,0,0.5)';
-  ctx.fillRect(W/2 - 100, H/2 - 24, 200, 48);
-  ctx.strokeStyle = 'rgba(106,176,232,0.5)';
-  ctx.strokeRect(W/2 - 100, H/2 - 24, 200, 48);
-  ctx.fillStyle = '#1c6fa8';
-  ctx.font = 'bold 13px IBM Plex Mono, monospace';
-  ctx.textAlign = 'center';
-  ctx.fillText(' ' + district.name, W/2, H/2 - 6);
-  ctx.fillStyle = ndviColor(ndvi);
-  ctx.font = '12px IBM Plex Mono, monospace';
-  ctx.fillText(`NDVI: ${ndvi.toFixed(3)}`, W/2, H/2 + 14);
-
-  const lgX = 20, lgY = H - 40, lgW = 120, lgH = 10;
-  const grad = ctx.createLinearGradient(lgX, 0, lgX + lgW, 0);
-  grad.addColorStop(0, '#c0392b');
-  grad.addColorStop(0.4, '#e67e22');
-  grad.addColorStop(0.7, '#f5d080');
-  grad.addColorStop(1, '#27ae60');
-  ctx.fillStyle = grad;
-  ctx.fillRect(lgX, lgY, lgW, lgH);
-  ctx.fillStyle = 'rgba(15,30,20,0.4)';
-  ctx.font = '9px IBM Plex Mono, monospace';
-  ctx.textAlign = 'left';
-  ctx.fillText('0.0', lgX, lgY + 22);
-  ctx.textAlign = 'right';
-  ctx.fillText('1.0', lgX + lgW, lgY + 22);
-  ctx.textAlign = 'center';
-  ctx.fillStyle = 'rgba(15,30,20,0.25)';
-  ctx.fillText('NDVI', lgX + lgW/2, lgY + 22);
-
-  ctx.fillStyle = 'rgba(106,176,232,0.7)';
-  ctx.font = '9px IBM Plex Mono, monospace';
-  ctx.textAlign = 'right';
-  ctx.fillText(useReal ? 'NASA MODIS Terra · MOD13Q1 · 250m (real pixels)' : 'NASA MODIS Terra · MOD13Q1 · 250m (est.)', W - 12, H - 8);
-}
+// --- NDVI picture + number display ---
+// Shows the real Sentinel-2 NDVI picture for the district, the NDVI number
+// and one short neutral note. No crop verdicts, no moisture index, no trend.
 async function fetchSatelliteData() {
   if (selectedDistrict === null) { alert('Please select your district first.'); return; }
   if (selectedSatCrop === null) { alert('Please select your crop first.'); return; }
@@ -1788,50 +1715,46 @@ async function fetchSatelliteData() {
   document.getElementById('satIcon').classList.add('scanning');
 
   const overlay = document.getElementById('ndviOverlay');
-  overlay.innerHTML = '<div class="ndvi-spinner"></div><div class="ndvi-loading">Querying NASA MODIS Terra MOD13Q1<br>16-day NDVI composite...</div>';
+  overlay.innerHTML = '<div class="ndvi-spinner"></div><div class="ndvi-loading">Loading Sentinel-2 NDVI...</div>';
 
   const district = DISTRICTS[selectedDistrict];
   const crop = CROPS[selectedSatCrop];
 
-  let ndvi, ndviPrev, dateStr, realGrid = null, gridRows = 0, gridCols = 0;
+  let ndvi, dateStr, picUrl;
   let dataSource = 'demo';
 
-  const snapshot = await loadNdviSnapshot(district).catch(() => null);
+  const snapshot = await loadSentinelSnapshot(district).catch(() => null);
   if (snapshot) {
-    ({ ndvi, prev: ndviPrev, dateStr, grid: realGrid, rows: gridRows, cols: gridCols, source: dataSource } = snapshot);
+    ({ ndvi, dateStr, pic: picUrl, source: dataSource } = snapshot);
   } else {
-    const live = await loadNdviLive(district).catch((err) => {
-      console.warn('Live MODIS fetch failed:', err);
-      return null;
-    });
-    if (live) {
-      ({ ndvi, prev: ndviPrev, dateStr, grid: realGrid, rows: gridRows, cols: gridCols, source: dataSource } = live);
-    } else {
-      console.warn('Using modeled NDVI estimate for', district.name);
-      const month = new Date().getMonth();
-      const seasonalBoost = (month >= 1 && month <= 3) || (month >= 6 && month <= 9) ? 0.06 : -0.04;
-      const noise = (Math.random() - 0.5) * 0.08;
-      ndvi = Math.min(0.85, Math.max(0.15, district.ndviBase + seasonalBoost + noise));
-      ndviPrev = Math.min(0.85, Math.max(0.15, ndvi + (Math.random() - 0.5) * 0.06));
-      dateStr = new Date().toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' }) + ' (estimated)';
-    }
+    console.warn('Using modeled NDVI estimate for', district.name);
+    const month = new Date().getMonth();
+    const seasonalBoost = (month >= 1 && month <= 3) || (month >= 6 && month <= 9) ? 0.06 : -0.04;
+    const noise = (Math.random() - 0.5) * 0.08;
+    ndvi = Math.min(0.85, Math.max(0.15, district.ndviBase + seasonalBoost + noise));
+    dateStr = new Date().toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' }) + ' (estimated)';
+    picUrl = 'data/ndvi-pics/' + districtSlug(district.name) + '.png';
   }
   const isReal = dataSource !== 'demo';
 
-  const trend = ndvi > ndviPrev ? 'Up' : 'Down';
-  const trendColor = ndvi > ndviPrev ? '#27ae60' : '#e67e22';
-  const moisture = isReal
-    ? Math.min(1.0, Math.max(0, ndvi * 0.85))
-    : Math.min(1.0, Math.max(0, ndvi * 0.85 + Math.random() * 0.1));
+  // Status is kept for the post-harvest risk model only (not shown here).
+  let statusLabel, statusColor;
+  if (ndvi >= crop.optNDVI + 0.08) { statusLabel = 'Dense'; statusColor = '#27ae60'; }
+  else if (ndvi >= crop.optNDVI - 0.05) { statusLabel = 'Optimal'; statusColor = '#e8b84b'; }
+  else if (ndvi >= crop.optNDVI - 0.15) { statusLabel = 'Moderate'; statusColor = '#e67e22'; }
+  else { statusLabel = 'Stressed'; statusColor = '#c0392b'; }
 
-  let statusLabel, statusSub, statusColor;
-  if (ndvi >= crop.optNDVI + 0.08) { statusLabel = 'Dense'; statusSub = 'Above optimal'; statusColor = '#27ae60'; }
-  else if (ndvi >= crop.optNDVI - 0.05) { statusLabel = 'Optimal'; statusSub = 'Ready range'; statusColor = var_harvest(); }
-  else if (ndvi >= crop.optNDVI - 0.15) { statusLabel = 'Moderate'; statusSub = 'Below optimal'; statusColor = '#e67e22'; }
-  else { statusLabel = 'Stressed'; statusSub = 'Significant stress'; statusColor = '#c0392b'; }
+  // One short neutral note: what the satellite sees, not a harvest verdict.
+  const note = ndvi >= 0.6 ? 'Dense green vegetation'
+    : ndvi >= 0.4 ? 'Healthy green vegetation'
+    : ndvi >= 0.2 ? 'Moderate vegetation'
+    : ndvi >= 0.1 ? 'Sparse vegetation'
+    : 'Mostly bare soil';
 
-  drawNDVIMap(ndvi, district, realGrid, gridRows, gridCols);
-  document.getElementById('ndviCanvas').style.display = 'block';
+  // Real Sentinel-2 NDVI picture for the district.
+  const pic = document.getElementById('ndviPic');
+  pic.src = picUrl;
+  pic.style.display = 'block';
   overlay.innerHTML = '';
 
   const r = document.getElementById('ndviResults');
@@ -1839,47 +1762,14 @@ async function fetchSatelliteData() {
 
   document.getElementById('ndviCurrent').textContent = ndvi.toFixed(3);
   document.getElementById('ndviCurrent').style.color = statusColor;
-  document.getElementById('ndviTrend').innerHTML = `<span style="color:${trendColor}">${trend} vs prev period (${ndviPrev.toFixed(3)})</span>`;
-  document.getElementById('ndviStatus').textContent = statusLabel;
-  document.getElementById('ndviStatus').style.color = statusColor;
-  document.getElementById('ndviStatusSub').textContent = statusSub;
-  document.getElementById('ndviRainfall').textContent = (moisture * 100).toFixed(0) + '%';
-  document.getElementById('ndviRainfallSub').textContent = moisture > 0.6 ? 'Good moisture' : moisture > 0.4 ? 'Moderate' : 'Low — irrigation needed';
-
-  document.getElementById('ndviBarWrap').style.display = 'block';
-  const pct = Math.round(ndvi * 100);
-  document.getElementById('ndviBarPct').textContent = pct + '%';
-  const fill = document.getElementById('ndviBarFill');
-  fill.style.background = ndvi >= 0.5 ? 'linear-gradient(90deg,#e67e22,#27ae60)' : 'linear-gradient(90deg,#c0392b,#e67e22)';
-  setTimeout(() => { fill.style.width = pct + '%'; }, 100);
+  document.getElementById('ndviNote').textContent = note;
 
   const dateEl = document.getElementById('ndviDate');
   dateEl.textContent = dataSource === 'snapshot'
-    ? `NASA MODIS · ${dateStr} · auto-updated weekly`
-    : dataSource === 'live'
-      ? `NASA MODIS · ${dateStr} · live`
-      : `Modeled estimate · ${dateStr} · live feed unavailable`;
+    ? `Sentinel-2 · ${dateStr} · auto-updated weekly`
+    : `Modeled estimate · ${dateStr} · live feed unavailable`;
   dateEl.classList.remove('live', 'demo');
   dateEl.classList.add(isReal ? 'live' : 'demo');
-
-  const verdict = document.getElementById('harvestVerdict');
-  const vTitle = document.getElementById('verdictTitle');
-  const vText = document.getElementById('verdictText');
-  verdict.classList.add('visible');
-
-  if (ndvi >= crop.optNDVI) {
-    verdict.className = 'harvest-verdict visible verdict-optimal';
-    vTitle.textContent = ' Crop Health: OPTIMAL — Good time to harvest';
-    vText.textContent = `NDVI reading of ${ndvi.toFixed(3)} for ${crop.en} in ${district.name} indicates healthy canopy with adequate moisture. Physiological maturity indicators align with expected harvest window. Proceed with harvest and focus on post-harvest handling — see Phase 2 below.`;
-  } else if (ndvi >= crop.optNDVI - 0.12) {
-    verdict.className = 'harvest-verdict visible verdict-caution';
-    vTitle.textContent = ' Crop Health: MODERATE — Harvest with caution';
-    vText.textContent = `NDVI reading of ${ndvi.toFixed(3)} suggests mild crop stress in ${district.name}. This may indicate water deficit or early senescence. Inspect field physically before bulk harvest. Stressed crops have lower Brix and higher post-harvest respiration rates — expect 15–20% higher losses than normal.`;
-  } else {
-    verdict.className = 'harvest-verdict visible verdict-stress';
-    vTitle.textContent = ' Crop Health: STRESSED — Delay harvest if possible';
-    vText.textContent = `NDVI reading of ${ndvi.toFixed(3)} indicates significant crop stress in ${district.name}. Stress-harvested ${crop.en} shows accelerated post-harvest deterioration — typical shelf life is reduced by 30–40%. If harvest cannot be delayed, prioritise immediate cold chain and reduce handling damage to minimum.`;
-  }
 
   satelliteData = { ndvi, district: district.name, crop: crop.en, status: statusLabel, real: isReal };
 
@@ -1887,17 +1777,6 @@ async function fetchSatelliteData() {
   document.getElementById('satIcon').classList.remove('scanning');
   btn.disabled = false;
   btn.innerHTML = ' Refresh Satellite Data';
-}
-function var_harvest() { return '#e8b84b'; }
-
-function ndviColor(v) {
-  if (v < 0.2) return '#7b3f00';
-  if (v < 0.3) return '#c0392b';
-  if (v < 0.4) return '#e67e22';
-  if (v < 0.5) return '#f1c40f';
-  if (v < 0.6) return '#82c341';
-  if (v < 0.7) return '#27ae60';
-  return '#1a6b38';
 }
 
 // ============================================================

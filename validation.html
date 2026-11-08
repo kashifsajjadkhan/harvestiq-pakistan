@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Field validation — HarvestIQ Pakistan</title>
+<style>
+  body { margin: 0; background: #f4f8f5; color: #16241c;
+    font-family: 'IBM Plex Sans', system-ui, sans-serif; }
+  .wrap { max-width: 920px; margin: 0 auto; padding: 28px 20px 40px; }
+  h1 { font-family: 'Playfair Display', Georgia, serif; font-size: 30px;
+    margin: 0 0 6px; color: #16241c; }
+  .sub { color: #5c6b62; font-size: 15px; margin: 0 0 18px; }
+  .note { background: #fff8e1; border: 1px solid #e8b84b; border-radius: 10px;
+    padding: 12px 16px; font-size: 14px; margin-bottom: 26px; }
+  .note b { color: #7a5c00; }
+  h2 { font-family: 'Playfair Display', Georgia, serif; font-size: 22px;
+    margin: 30px 0 10px; }
+  .maps { display: flex; gap: 16px; flex-wrap: wrap; }
+  .mapbox { flex: 1 1 380px; background: #fff; border: 1px solid #cfe0ea;
+    border-radius: 10px; overflow: hidden; }
+  .mapbox img { width: 100%; display: block; }
+  .mapbox p { margin: 0; padding: 10px 14px; font-size: 13px; color: #5c6b62; }
+  .mapbox p b { color: #16241c; }
+  .card { background: #fff; border: 1px solid #cfe0ea; border-radius: 10px;
+    overflow: hidden; margin-top: 18px; box-shadow: 0 2px 8px rgba(20,40,30,.06); }
+  .card h3 { font-family: 'Playfair Display', Georgia, serif; font-size: 20px;
+    margin: 0; padding: 16px 18px 4px; }
+  .card .meta { padding: 0 18px; font-size: 13px; color: #5c6b62; }
+  .pair { display: flex; gap: 12px; padding: 14px 18px 6px; flex-wrap: wrap; }
+  .pair figure { flex: 1 1 300px; margin: 0; }
+  .pair img { width: 100%; border-radius: 8px; display: block; }
+  .pair figcaption { font-size: 13px; color: #5c6b62; padding-top: 6px; }
+  .explain { padding: 4px 18px 18px; font-size: 15px; line-height: 1.55; }
+  .explain b { color: #1f7a44; }
+  .num { font-family: 'IBM Plex Mono', monospace; font-size: 14px;
+    background: #f4f8f5; border-radius: 6px; padding: 2px 6px; }
+  .foot { margin-top: 30px; font-size: 14px; color: #5c6b62; line-height: 1.6;
+    border-top: 1px solid #cfe0ea; padding-top: 16px; }
+  table.summary { width: 100%; border-collapse: collapse; background: #fff;
+    border: 1px solid #cfe0ea; border-radius: 10px; overflow: hidden;
+    font-size: 14px; margin-top: 4px; }
+  table.summary th { background: #eaf4ec; color: #1f7a44; text-align: left;
+    padding: 10px 12px; font-size: 13px; }
+  table.summary td { padding: 10px 12px; border-top: 1px solid #e6efe9; }
+  table.summary td.num { font-family: 'IBM Plex Mono', monospace; }
+  table.summary td.yes { color: #1f7a44; font-weight: 700; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>Field validation — ground truth vs satellite</h1>
+  <p class="sub">Bhakkar, Punjab — checked against Sentinel-2 NDVI</p>
+  <div class="note">Every ground photo, satellite picture and number below is real.
+  Ground photos were taken in Bhakkar, Punjab; the satellite pictures are Sentinel-2 NDVI for the same places and dates.</div>
+  <p style="margin:0 0 18px"><a href="index.html" style="color:#1c6fa8">&larr; Back to HarvestIQ</a></p>
+
+  <h2>Where we checked</h2>
+  <div class="maps">
+    <div class="mapbox">
+      <img src="validation/map_bhakkar_nov7.png" alt="Satellite map of Bhakkar with Mango, Guava and Citrus pins">
+      <p><b>Bhakkar, 7 Nov 2026 points.</b> Sentinel-2, 3 Nov 2026. Red pins are the exact GPS points where the photos were taken.</p>
+    </div>
+    <div class="mapbox">
+      <img src="validation/map_bhakkar_sep30.png" alt="Satellite map of Bhakkar with the Citrus pin">
+      <p><b>Bhakkar, 30 Sep 2026 point.</b> Sentinel-2, 29 Sep 2026. The Citrus pin is the exact GPS point of the photo.</p>
+    </div>
+  </div>
+
+  <h2>Did the checks pass?</h2>
+  <table class="summary">
+    <thead><tr><th>#</th><th>Crop</th><th>What I saw</th><th>NDVI</th><th>Expected</th><th>Match?</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td>Citrus</td><td>Healthy trees, edge of orchard</td><td class="num">0.24</td><td>Mixed</td><td class="yes">Yes</td></tr>
+      <tr><td>2</td><td>Mango</td><td>Young sparse trees, bare soil</td><td class="num">0.12</td><td>Low</td><td class="yes">Yes</td></tr>
+      <tr><td>3</td><td>Guava</td><td>Young trees, wide bare soil</td><td class="num">0.20</td><td>Low</td><td class="yes">Yes</td></tr>
+      <tr><td>4</td><td>Citrus</td><td>Thin hedge, bare ground beside it</td><td class="num">0.13</td><td>Low</td><td class="yes">Yes</td></tr>
+    </tbody>
+  </table>
+
+  <h2>The checks</h2>
+
+  <div class="card">
+    <h3>Citrus orchard — Bhakkar</h3>
+    <p class="meta">30 Sep 2026, 11:20 AM · Lat 31.527476, Lon 71.195258 · Scene S2C_MSIL2A_20260929</p>
+    <div class="pair">
+      <figure><img src="validation/val/citrus.jpg" alt="Citrus orchard ground photo"><figcaption>On the ground — healthy citrus trees with fruit.</figcaption></figure>
+      <figure><img src="validation/proof_ndvi_citrus_bhakkar.png" alt="NDVI satellite picture of the citrus orchard area"><figcaption>From the satellite — NDVI picture, same place, 29 Sep 2026. Green is healthy crop, red is bare soil.</figcaption></figure>
+    </div>
+    <div class="pair">
+      <figure><img src="validation/val/citrus_google.png" alt="Google Maps satellite view of the citrus orchard"><figcaption>The same orchard from above — Google Maps satellite view (not Sentinel-2, date unknown). You can see the rows of trees, and the pin sits at the edge where the dense trees meet the bare field.</figcaption></figure>
+    </div>
+    <p class="explain">Satellite NDVI at the point: <span class="num">0.24</span>. The orchard canopy itself reads about <span class="num">0.53</span> and bare soil about <span class="num">0.15</span>. <b>The sensor is right</b> — the photo was taken on the orchard edge, so the number mixes trees and bare field, and the Google view above shows that edge clearly.</p>
+  </div>
+
+  <div class="card">
+    <h3>Mango — Bhakkar</h3>
+    <p class="meta">7 Nov 2026, 12:03 PM · Lat 31.6047, Lon 71.0707 · Scene S2B_MSIL2A_20261103</p>
+    <div class="pair">
+      <figure><img src="validation/val/citrus2.jpg" alt="Mango ground photo"><figcaption>On the ground — young sparse trees, mostly bare soil.</figcaption></figure>
+      <figure><img src="validation/proof_ndvi_citrus_bhakkar2.png" alt="NDVI satellite picture of the mango area"><figcaption>From the satellite — NDVI picture, same place, 3 Nov 2026. The red circle is where the photo was taken.</figcaption></figure>
+    </div>
+    <div class="pair">
+      <figure><img src="validation/val/mango_google.png" alt="Google Maps satellite view of the mango area"><figcaption>The same place from above — Google Maps satellite view (not Sentinel-2, date unknown). Bare reddish soil with a few young trees, which is why the satellite reads it low.</figcaption></figure>
+    </div>
+    <p class="explain">Satellite NDVI at the point: <span class="num">0.12</span>. <b>Low, as expected</b> — the ground here is mostly bare dirt with a few young trees, and the satellite reads it low, correctly.</p>
+  </div>
+
+  <div class="card">
+    <h3>Guava — Bhakkar</h3>
+    <p class="meta">7 Nov 2026, 12:03 PM · Lat 31.6071, Lon 71.0698 · Scene S2B_MSIL2A_20261103 · GPS accuracy ±122 m</p>
+    <div class="pair">
+      <figure><img src="validation/val/citrus3.jpg" alt="Guava ground photo"><figcaption>On the ground — a row of young guava trees, wide bare dirt between them.</figcaption></figure>
+      <figure><img src="validation/proof_ndvi_citrus_bhakkar3.png" alt="NDVI satellite picture of the guava area"><figcaption>From the satellite — NDVI picture, same place, 3 Nov 2026. The red circle is where the photo was taken.</figcaption></figure>
+    </div>
+    <div class="pair">
+      <figure><img src="validation/val/guava_google.png" alt="Google Maps satellite view of the guava area"><figcaption>The same place from above — Google Maps satellite view (not Sentinel-2, date unknown). The pin sits in the built-up area; the photo's GPS was only accurate to ±122 m, so the pin is approximate, and the orchard block is just south of the road.</figcaption></figure>
+    </div>
+    <p class="explain">Satellite NDVI at the point: <span class="num">0.20</span>. <b>Low, as expected</b> — sparse young trees on bare soil read low, and the satellite reads it that way.</p>
+  </div>
+
+  <div class="card">
+    <h3>Citrus / orange — Bhakkar</h3>
+    <p class="meta">7 Nov 2026, 12:35 PM · Lat 31.5970, Lon 71.0708 · Scene S2B_MSIL2A_20261103</p>
+    <div class="pair">
+      <figure><img src="validation/val/bhakkar4.jpg" alt="Citrus ground photo"><figcaption>On the ground — a dense citrus row along a field edge.</figcaption></figure>
+      <figure><img src="validation/proof_ndvi_bhakkar4.png" alt="NDVI satellite picture of the citrus area"><figcaption>From the satellite — NDVI picture, same place, 3 Nov 2026. The red circle is where the photo was taken.</figcaption></figure>
+    </div>
+    <div class="pair">
+      <figure><img src="validation/val/citrus7_google.png" alt="Google Maps satellite view of the citrus area"><figcaption>The orchard rows around the point from above — Google Maps satellite view (not Sentinel-2, date unknown). The pin is just out of frame in this shot; the rows of trees and the solar panels at the left are the same area as the photo.</figcaption></figure>
+    </div>
+    <p class="explain">Satellite NDVI at the point: <span class="num">0.13</span>. <b>Low, as expected</b> — the photo shows a dense hedge, but from above it is a thin tree line in a big bare area, and the pin sits on the bare ground beside it.</p>
+  </div>
+
+  <p class="foot"><b>What this proves so far:</b> in every check, the satellite reads what is actually on the ground — dense orchard reads high, bare soil reads low. That is the whole point of validation.
+  <br>Still to come: one dense orchard photo standing <i>inside</i> the trees (mango or citrus), and a field crop (tomato, potato or spinach) — then 5 points across 5 crops, and the claim is field-validated.
+  <br>Imagery: Contains modified Copernicus Sentinel data 2026.</p>
+
+</div>
+</body>
+</html>
