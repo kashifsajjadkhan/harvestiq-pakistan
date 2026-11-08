@@ -26,6 +26,8 @@ HarvestIQ is a bilingual (English/Urdu), offline-capable web app that walks a fa
 2. **Post-harvest risk model** — the farmer enters harvest conditions (days since harvest, maturity, harvest method, storage, packaging, temperature, humidity, transport) and gets a nine-factor spoilage-risk score, estimated shelf life remaining, and a prioritized action list.
 3. **Economic calculator** — quantity and market price in → estimated loss in PKR, potential savings from the recommended actions, and the break-even price needed to cover losses.
 
+**GPS spot check (for researchers and students)** — type any latitude and longitude and the app fetches the latest clear Sentinel-2 scene for that exact spot, live, and shows the NDVI number and a real satellite picture of the place. No account needed. A farmer does not need this (the district buttons are simpler); a researcher who needs NDVI for one specific study site does.
+
 ## Live satellite data
 
 Crop-health readings come from **Sentinel-2 L2A (10 m resolution)** via the **Copernicus Data Space** (STAC and Process APIs). Punjab's smallholder plots are smaller than a single MODIS pixel (250 m), so MODIS could not resolve the farms this tool is for — Sentinel-2 can.
@@ -39,6 +41,8 @@ How the pipeline works:
 - The app loads the snapshot from its own domain (no CORS issues, works offline once cached); if the snapshot is ever missing it falls back to a clearly-labelled modelled estimate
 
 The previous MODIS pipeline (`scripts/fetch_ndvi.py`, `.github/workflows/ndvi-refresh.yml`) is retained for manual runs only; its weekly schedule is disabled.
+
+**GPS spot check** — separate from the weekly snapshot, the app can also check any coordinates live. It searches Microsoft Planetary Computer (STAC) for the latest clear Sentinel-2 scene at that point in the last 30 days, then reads the NDVI at the exact coordinates and renders a ~2 km picture around it, using the same cloud mask (SCL 4/5) and the same (B08-B04)/(B08+B04) formula. This is a public service, no login and no credentials in the page. It is a standalone lookup: it does not feed the post-harvest risk model.
 
 ## Field validation
 
