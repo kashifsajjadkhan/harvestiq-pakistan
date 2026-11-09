@@ -1813,9 +1813,8 @@ async function fetchSatelliteData() {
 // lookup: it does not touch satelliteData or the post-harvest risk model.
 const PC_STAC = 'https://planetarycomputer.microsoft.com/api/stac/v1/search';
 const PC_TITILER = 'https://planetarycomputer.microsoft.com/api/data/v1';
-const GPS_NDVI_EXPR = 'where((SCL==4)|(SCL==5),(B08-B04)/(B08+B04),-1)';
-
-async function checkGpsSpot() {
+const GPS_NDVI_EXPR = 'where((SCL==4)|(SCL==5),((B08-B04)*0.0001)/((B08+B04)*0.0001-0.2),-1)'; 
+  async function checkGpsSpot() {
   const latEl = document.getElementById('gpsLat');
   const lonEl = document.getElementById('gpsLon');
   const hint = document.getElementById('gpsHint');
