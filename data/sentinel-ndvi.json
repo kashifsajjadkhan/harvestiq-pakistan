@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-11-08",
+  "updated_at": "2026-11-09",
   "product": "S2MSI2A",
   "source": "Copernicus Data Space (Sentinel-2 L2A)",
   "method": "SCL-masked mean NDVI (SCL 4/5 only), >=20% clear pixels, 30-day lookback",
