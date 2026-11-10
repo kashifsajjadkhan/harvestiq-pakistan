@@ -75,6 +75,7 @@
       <tr><td>2</td><td>Mango</td><td>Young sparse trees, bare soil</td><td class="num">0.18</td><td>Low</td><td class="yes">Yes</td></tr>
       <tr><td>3</td><td>Guava</td><td>Young trees, wide bare soil</td><td class="num">0.30</td><td>Low</td><td class="yes">Yes</td></tr>
       <tr><td>4</td><td>Citrus</td><td>Thin hedge, bare ground beside it</td><td class="num">0.21</td><td>Low</td><td class="yes">Yes</td></tr>
+      <tr><td>5</td><td>Spinach</td><td>Dense healthy leaves, field crop</td><td class="num">0.37</td><td>High</td><td class="yes">Yes</td></tr>
     </tbody>
   </table>
 
@@ -132,8 +133,19 @@
     <p class="explain">Satellite NDVI at the point: <span class="num">0.21</span>. <b>Low, as expected</b> — the photo shows a dense hedge, but from above it is a thin tree line in a big bare area, and the pin sits on the bare ground beside it.</p>
   </div>
 
+  <div class="card">
+    <h3>Spinach — Bhakkar</h3>
+    <p class="meta">10 Nov 2026, 11:44 AM · Lat 31.6403, Lon 71.0596 · Scene S2C_MSIL2A_20261108</p>
+    <div class="pair">
+      <figure><img src="validation/val/spinach.jpg" alt="Spinach field ground photo"><figcaption>On the ground — dense healthy spinach leaves, a full field crop.</figcaption></figure>
+      <figure><img src="validation/proof_ndvi_spinach.png" alt="NDVI satellite picture of the spinach field"><figcaption>From the satellite — NDVI picture, same place, 8 Nov 2026. The red circle is where the photo was taken.</figcaption></figure>
+    </div>
+    <p class="explain">Satellite NDVI at the point: <span class="num">0.37</span>. <b>High, as expected</b> — a dense leafy field reads high, and the satellite reads it that way.</p>
+    <p class="explain"><b>Independent check — exact match.</b> The tool's GPS lookup for this exact spot gave <span class="num">0.466</span>. A separate read of the same pixel, taken straight from the satellite data files (Microsoft Planetary Computer, Sentinel-2 L2A, 8 Nov 2026 — B04 2254, B08 4442, converted to reflectance), gave <span class="num">0.466</span>. Same pixel, same scene, same number to three decimals.</p>
+  </div>
+
   <p class="foot"><b>What this proves so far:</b> in every check, the satellite reads what is actually on the ground — dense orchard reads high, bare soil reads low. That is the whole point of validation.
-  <br>Still to come: one dense orchard photo standing <i>inside</i> the trees (mango or citrus), and a field crop (tomato, potato or spinach) — then 5 points across 5 crops, and the claim is field-validated.
+  <br>Still to come: one dense orchard photo standing <i>inside</i> the trees (mango or citrus), and a tomato or potato point — then 5 points across 5 distinct crops, and the claim is field-validated.
   <br>Imagery: Contains modified Copernicus Sentinel data 2026.</p>
 
 </div>
