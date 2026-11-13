@@ -410,6 +410,54 @@ body::before {
   z-index: 2;
 }
 
+/* GPS basemap stack: satellite photo behind the NDVI, with a blend slider. */
+.ndvi-stack {
+  position: relative;
+  display: inline-block;
+  line-height: 0;
+}
+#basemapPic {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: none;
+  border-radius: 8px;
+  z-index: 1;
+}
+#ndviPin {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #1c6fa8;
+  border: 2px solid #fff;
+  box-shadow: 0 0 0 1px rgba(28,111,168,0.6);
+  display: none;
+  z-index: 3;
+}
+.ndvi-blend-row {
+  display: none;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+  font-size: 0.78rem;
+  color: var(--text-dim);
+}
+.ndvi-blend-row input[type=range] {
+  flex: 1;
+  min-width: 0;
+}
+.ndvi-credit {
+  font-size: 0.68rem;
+  color: var(--text-dim);
+}
+
 /* ---- Field validation section (compact, bottom of satellite panel) ---- */
 .val-panel { margin-top: 24px; border-top: 1px solid var(--border); padding-top: 18px; }
 .val-panel h3 { font-family: 'Playfair Display', Georgia, serif; font-size: 1.15rem; margin: 0 0 2px; color: var(--text); }
@@ -1242,7 +1290,17 @@ body::before {
               <div style="font-size:0.82rem;color:var(--text-dim)">Select district and crop above,<br>then fetch satellite data</div>
             </div>
             <!-- Real Sentinel-2 NDVI picture for the selected district -->
-            <img id="ndviPic" class="ndvi-pic" src="" alt="Sentinel-2 NDVI picture for the selected district">
+            <div class="ndvi-stack" id="ndviStack">
+              <img id="basemapPic" src="" alt="Satellite basemap for the checked spot">
+              <img id="ndviPic" class="ndvi-pic" src="" alt="Sentinel-2 NDVI picture for the selected district">
+              <span id="ndviPin"></span>
+            </div>
+          </div>
+          <div class="ndvi-blend-row" id="ndviBlendRow">
+            <span>Satellite</span>
+            <input type="range" id="ndviBlend" min="0" max="100" value="60">
+            <span>NDVI</span>
+            <span class="ndvi-credit">Imagery: Esri, Maxar, Earthstar Geographics. NDVI: Sentinel-2 via Microsoft Planetary Computer.</span>
           </div>
         </div>
 
@@ -1694,6 +1752,7 @@ function selectDistrict(i, btn) {
   document.getElementById('ndviResults').classList.remove('visible');
   document.getElementById('proceedBtn').classList.remove('visible');
   document.getElementById('ndviPic').style.display = 'none';
+  hideBasemap();
   document.getElementById('ndviOverlay').innerHTML = `<div style="font-size:0.82rem;color:var(--text-dim)">District: <strong style="color:#1c6fa8">${DISTRICTS[i].name}</strong> selected.<br>Now select your crop and fetch satellite data.</div>`;
   document.getElementById('ndviMapTitle').textContent = ` NDVI MAP — ${DISTRICTS[i].name.toUpperCase()}, ${DISTRICTS[i].province.toUpperCase()}`;
 }
@@ -1774,6 +1833,7 @@ async function fetchSatelliteData() {
     : 'Mostly bare soil';
 
   // Real Sentinel-2 NDVI picture for the district.
+  hideBasemap();
   const pic = document.getElementById('ndviPic');
   pic.onerror = null;
   pic.src = picUrl;
@@ -1815,7 +1875,22 @@ async function fetchSatelliteData() {
 const PC_STAC = 'https://planetarycomputer.microsoft.com/api/stac/v1/search';
 const PC_TITILER = 'https://planetarycomputer.microsoft.com/api/data/v1';
 const GPS_NDVI_EXPR = 'where((SCL==4)|(SCL==5),((B08-B04)*0.0001)/((B08+B04)*0.0001-0.2),-1)'; 
+  // Basemap (Esri World Imagery) behind the GPS NDVI picture, with a blend
+  // slider. Hidden by default; only the GPS spot check shows it. The
+  // district flow never uses it.
+  function hideBasemap() {
+    const base = document.getElementById('basemapPic');
+    const pin = document.getElementById('ndviPin');
+    const row = document.getElementById('ndviBlendRow');
+    const pic = document.getElementById('ndviPic');
+    if (base) base.style.display = 'none';
+    if (pin) pin.style.display = 'none';
+    if (row) row.style.display = 'none';
+    if (pic) pic.style.opacity = '1';
+  }
+
   async function checkGpsSpot() {
+  hideBasemap();
   const latEl = document.getElementById('gpsLat');
   const lonEl = document.getElementById('gpsLon');
   const hint = document.getElementById('gpsHint');
@@ -1913,6 +1988,28 @@ const GPS_NDVI_EXPR = 'where((SCL==4)|(SCL==5),((B08-B04)*0.0001)/((B08+B04)*0.0
     pic.alt = `Sentinel-2 NDVI picture for ${lat}, ${lon}`;
     pic.style.display = 'block';
     overlay.innerHTML = '';
+
+    // Satellite basemap behind the NDVI, same ~2 km box, with a blend slider.
+    const base = document.getElementById('basemapPic');
+    const pin = document.getElementById('ndviPin');
+    const row = document.getElementById('ndviBlendRow');
+    const slider = document.getElementById('ndviBlend');
+    const applyBlend = () => {
+      pic.style.opacity = String((slider ? parseInt(slider.value, 10) : 60) / 100);
+    };
+    if (slider) slider.oninput = applyBlend;
+    if (base) {
+      base.onerror = function() {
+        base.style.display = 'none';
+        if (pin) pin.style.display = 'none';
+        pic.style.opacity = '1';
+      };
+      base.src = `https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/export?bbox=${bbox}&bboxSR=4326&imageSR=4326&size=800,800&format=jpg&f=image`;
+      base.style.display = 'block';
+    }
+    if (pin) pin.style.display = 'block';
+    if (row) row.style.display = 'flex';
+    applyBlend();
     document.getElementById('ndviCurrent').textContent = ndvi.toFixed(3);
     document.getElementById('ndviCurrent').style.color = numColor;
     document.getElementById('ndviNote').textContent = note;
