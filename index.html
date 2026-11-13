@@ -603,6 +603,8 @@ body::before {
 .gps-btn { padding: 10px 18px; background: linear-gradient(135deg, #1a3a5c, #245683); border: 1px solid rgba(106,176,232,0.4); border-radius: 8px; color: #fff; font-family: 'IBM Plex Sans', sans-serif; font-size: 0.9rem; font-weight: 600; cursor: pointer; white-space: nowrap; }
 .gps-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 .gps-hint { font-size: 0.78rem; color: var(--text-dim); margin-top: 8px; }
+.gps-zoom-label { font-size: 0.78rem; color: var(--text-dim); white-space: nowrap; }
+.gps-zoom { padding: 10px 8px; border: 1px solid var(--border); border-radius: 8px; font-family: 'IBM Plex Sans', sans-serif; font-size: 0.9rem; color: var(--text); background: #fff; cursor: pointer; }
 
 .proceed-btn {
   width: 100%;
@@ -1273,6 +1275,13 @@ body::before {
             <input id="gpsLat" class="gps-input" type="number" step="any" min="-90" max="90" placeholder="Latitude — e.g. 31.5275">
             <input id="gpsLon" class="gps-input" type="number" step="any" min="-180" max="180" placeholder="Longitude — e.g. 71.1953">
             <button class="gps-btn" id="gpsBtn" onclick="checkGpsSpot()">Check this spot</button>
+            <label class="gps-zoom-label" for="gpsZoom">Area</label>
+            <select id="gpsZoom" class="gps-zoom" onchange="onGpsZoomChange()">
+              <option value="0.0023">500 m</option>
+              <option value="0.0045">1 km</option>
+              <option value="0.01" selected>2 km</option>
+              <option value="0.023">5 km</option>
+            </select>
           </div>
           <div class="gps-hint" id="gpsHint">Type the latitude and longitude of a field or orchard. Tip: a GPS camera app stamps the coordinates on your photo, type those numbers here. No account needed.</div>
         </div>
@@ -1889,6 +1898,18 @@ const GPS_NDVI_EXPR = 'where((SCL==4)|(SCL==5),((B08-B04)*0.0001)/((B08+B04)*0.0
     if (pic) pic.style.opacity = '1';
   }
 
+  // Changing the zoom re-runs the GPS check when a GPS result is already
+  // shown, so the picture updates at the new zoom without another click.
+  function onGpsZoomChange() {
+    const btn = document.getElementById('gpsBtn');
+    if (btn && btn.disabled) return;
+    const title = document.getElementById('ndviMapTitle');
+    const results = document.getElementById('ndviResults');
+    if (title && title.textContent.includes('NDVI — GPS') && results && results.classList.contains('visible')) {
+      checkGpsSpot();
+    }
+  }
+
   async function checkGpsSpot() {
   hideBasemap();
   const latEl = document.getElementById('gpsLat');
@@ -1965,8 +1986,9 @@ const GPS_NDVI_EXPR = 'where((SCL==4)|(SCL==5),((B08-B04)*0.0001)/((B08+B04)*0.0
     }
     if (!found) { fail('No clear view of this spot in the last 30 days — clouds in the way. Try again later.'); return; }
 
-    // Picture: ~2 km box around the point, cloud-masked NDVI, red-yellow-green.
-    const half = 0.01;
+    // Picture: box around the point at the chosen zoom, cloud-masked NDVI, red-yellow-green.
+    const zoomSel = document.getElementById('gpsZoom');
+    const half = zoomSel ? parseFloat(zoomSel.value) || 0.01 : 0.01;
     const bbox = `${lon - half},${lat - half},${lon + half},${lat + half}`;
     const picUrl = `${PC_TITILER}/item/bbox/${bbox}/400x400.png?collection=sentinel-2-l2a&item=${encodeURIComponent(found.itemId)}&assets=B04&assets=B08&assets=SCL&expression=${encodeURIComponent(GPS_NDVI_EXPR)}&asset_as_band=true&rescale=-0.1,0.8&colormap_name=rdylgn`;
 
